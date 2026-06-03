@@ -1,0 +1,129 @@
+<div th:fragment="editParticipantForm" class="flex flex-col h-4/5">
+
+    <form th:action="@{/participants/edit-participant}"
+          th:object="${participant}"
+          method="post"
+          id="modalForm"
+          class="flex flex-col h-full">
+
+<!--        <input type="hidden" th:field="*{vsdcode}" />-->
+
+        <div class="flex-1 overflow-y-auto px-6 py-4">
+            <div class="space-y-4 max-w-3xl mx-auto">
+                <input type="hidden" th:field="*{id}" required="required"
+                       class="block w-2/3 px-3 py-2 text-sm rounded border border-gray-300">
+                <!-- VSDCODE -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.vsdcode}"></label>
+                    <input type="text" th:field="*{vsdcode}" readonly required="required" maxlength="3"
+                           class="block w-2/3 px-3 py-2 text-sm rounded border border-gray-300 bg-gray-100 text-gray-400">
+                </div>
+
+                <!-- BICCODE -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.biccode}"></label>
+
+                    <input type="text" th:field="*{biccode}" required maxlength="8"
+                           class="block w-2/3 px-3 py-2 text-sm rounded border border-gray-300">
+                </div>
+
+                <!-- SHORTNAME -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.shortname}"></label>
+
+                    <input type="text" th:field="*{shortname}" required
+                           class="block w-2/3 px-3 py-2 text-sm rounded border ">
+                </div>
+
+                <!-- FULLNAME EN -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.name.en}"></label>
+
+                    <input type="text" th:field="*{fullnameen}" required maxlength="300"
+                           class="block w-2/3 px-3 py-2 text-sm rounded border ">
+                </div>
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.name.vn}"></label>
+
+                    <input type="text" th:field="*{fullnamevn}" required maxlength="300"
+                           class="block w-2/3 px-3 py-2 text-sm rounded border ">
+                </div>
+
+                <!-- GROUP -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.group}"></label>
+
+                    <select th:field="*{groupqueue}"
+                            class="block w-2/3 px-3 py-2 text-sm rounded border border-gray-300">
+                        <option value="" disabled>-- Select --</option>
+                        <option th:each="g : ${groupUsers}"
+                                th:value="${g.grid}"
+                                th:text="${g.grname}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- STATUS -->
+                <div class="flex items-center">
+                    <label class="block text-xs font-medium text-gray-700 w-1/3"
+                           th:text="#{form.participant.status}"></label>
+
+                    <select th:field="*{status}"
+                            class="block w-2/3 px-3 py-2 text-sm rounded border border-gray-300">
+                        <option value="" disabled>-- Select --</option>
+                        <option value="A" th:text="#{page.participant.status.active}"></option>
+                        <option value="B" th:text="#{page.participant.status.blocked}"></option>
+                        <option value="M" th:text="#{page.participant.status.monitor}"></option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="border-t px-6 py-3 flex justify-end gap-3">
+            <!-- Cancel Button -->
+            <button type="button"
+                    class="modal-cancel-btn bg-gray-200 px-3 py-1.5 rounded-md flex items-center gap-2">
+                <!-- SVG icon (x-mark) -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span th:text="#{global.button.cancel}">Cancel</span>
+            </button>
+
+            <!-- Update Button -->
+            <button type="submit"
+                    class="px-3 py-1.5 bg-cyan-600 text-white rounded-md flex items-center gap-2">
+                <!-- SVG icon (check) -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span th:text="#{global.button.update}">Update</span>
+
+            </button>
+        </div>
+
+
+    </form>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const vsdInput = document.querySelector("input[name='vsdcode']");
+
+        if (vsdInput) {
+            vsdInput.addEventListener("input", function () {
+                if (this.value.length > 3) {
+                    this.value = this.value.slice(0, 3);
+                }
+            });
+        }
+    });
+</script>

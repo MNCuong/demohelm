@@ -1,0 +1,49 @@
+<div th:fragment="dynamicTable(headers, fields, dataList, idField, currentSortField, currentSortDir, pageData, filters)"
+     class="border border-gray-200 rounded-lg bg-white">
+    <table class="min-w-full text-sm text-gray-700 font-sans table-fixed">
+        <thead class="text-xs text-gray-500 uppercase bg-gray-50">
+        <tr>
+            <th scope="col"
+                th:each="headerKey, iterStat : ${headers}"
+                th:with="colCount=${#lists.size(headers)}"
+                style="width: calc(100% / [[${colCount}]])"
+                class="px-4 py-3.5 font-medium border-l border-gray-100 text-center">
+                <a th:href="@{''(
+            page=1,
+            size=${pageData.size},
+            sortField=${field},
+            sortDir=${currentSortField == field and currentSortDir == 'asc' ? 'desc' : 'asc'},
+            ${filters}
+    )}">
+                    <span th:text="#{__${headerKey}__}"></span>
+                </a>
+
+            </th>
+            <th scope="col" style="width: calc(100% / [[${#lists.size(headers)}]])"
+                th:if="${showActions != false}"
+                class="px-6 py-3.5 font-bold text-gray-700 border-l border-gray-100 text-center"
+                th:text="#{global.label.actions}">
+            </th>
+        </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-200">
+        <!-- ======= Khi danh sách rỗng ======= -->
+        <tr th:if="${#lists.isEmpty(dataList)}">
+            <td th:colspan="${#lists.size(headers) + 1}"
+                class="text-center py-8 text-gray-600 italic" th:text="#{global.label.no_matching_data-found}">
+
+            </td>
+        </tr>
+        <!-- ======= Khi có dữ liệu ======= -->
+        <tr th:each="item : ${dataList}"
+            th:unless="${#lists.isEmpty(dataList)}"
+            class="bg-white hover:bg-blue-50/70 transition duration-150">
+            <th:block th:insert="~{ :: rowContent(item=${item}, idField=${idField})}"></th:block>
+        </tr>
+        </tbody>
+
+        <tfoot class="font-sans text-gray-600 bg-gray-50 border-t border-gray-200"></tfoot>
+    </table>
+
+</div>

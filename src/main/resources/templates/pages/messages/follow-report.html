@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.report.title}">Message Trace Portal</title>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+
+    <div class="mb-6">
+        <h1 class="text-4xl font-extrabold bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+            th:text="#{page.report.title}"></h1>
+        <p class="mt-1 text-sm text-gray-500" th:text="#{page.report.subtitle}"></p>
+    </div>
+    <div th:replace="~{fragments/common-status-cards :: render(statusCounts=${statusCounts})}"></div>
+
+    <div th:replace="~{fragments/common-filter :: render(
+        actionUrl='/messages/follow-report',
+        configs=${filterConfigs},
+        params=${currentParams}
+    )}"></div>
+    <div class="flex items-center text-sm
+            text-cyan-800 px-3 py-1.5 ">
+
+        <span th:text="#{global.total.records}"></span>
+        <span class="ml-1 font-bold text-cyan-700 text-base"
+              th:text="${transactionPage.totalElements}"></span>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-max text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-500 uppercase bg-gray-100 border-b border-gray-200">
+                <tr>
+<!--                    <th scope="col" class="px-6 py-4 font-semibold text-center"-->
+<!--                        th:text="#{page.report.table.header.autoid}"></th>-->
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.corerefid}"></th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.vsdcode}"></th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.status}"></th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.filename}"></th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.errmsg}"></th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.report.table.header.createdate}"></th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                <tr th:each="item : ${transactionPage.content}"
+                    class="hover:bg-blue-50 transition-colors duration-150">
+
+                    <td class="px-6 py-4 font-medium text-cyan-600 text-center">
+                        <a th:href="@{/messages/follow-report/detail(autoid=${item.autoid})}"
+                           class="hover:underline hover:text-cyan-800 cursor-pointer"
+                           th:text="${item.corerefid != null && item.corerefid != '' ? item.corerefid : '-'}">
+                        </a>
+                    </td>
+
+                    <td class="px-6 py-4 text-center"
+                        th:text="${item.vsdcode != null && item.vsdcode != '' ? item.vsdcode : '-'}">
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  th:classappend="${
+                    item.status == '0' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                    item.status == '1' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                    item.status == '2' ? 'bg-green-100 text-green-800 border-green-200' :
+                    item.status == '3' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                    item.status == 'E' ? 'bg-red-100 text-red-800 border-red-200' :
+                    'bg-gray-100 text-gray-800 border-gray-200'
+                }"
+                  th:text="${item.status == null || item.status == ''} ? '-' : #{${
+                    item.status == '0' ? 'page.msg.status.init' :
+                    item.status == '1' ? 'page.msg.status.processing' :
+                    item.status == '2' ? 'page.msg.status.success' :
+                    item.status == '3' ? 'page.msg.status.rejected' :
+                    item.status == 'E' ? 'page.msg.status.error' :
+                    'page.msg.status.unknown'
+                }}">
+            </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-center"
+                        th:text="${item.filename != null && item.filename != '' ? item.filename : '-'}">
+                    </td>
+
+                    <td class="px-6 py-4 text-center text-red-600
+           whitespace-normal break-words max-w-xs">
+    <span
+            th:text="${item.errmsg != null && item.errmsg != '' ? item.errmsg : '-'}">
+    </span>
+                    </td>
+
+
+                    <td class="px-6 py-4 text-center"
+                        th:text="${item.createdate != null} ? ${#temporals.format(item.createdate, 'dd/MM/yyyy HH:mm:ss')} : '-'">
+                    </td>
+                </tr>
+
+                <tr th:if="${transactionPage.empty}">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                        <span th:text="#{page.msg.table.no_data}">Không tìm thấy dữ liệu</span>
+                    </td>
+                </tr>
+                </tbody>            </table>
+        </div>
+        <div class="p-4">
+            <div th:replace="~{fragments/common_pagination :: paginationControls(
+              pageData=${transactionPage},
+              currentSortField=${currentSortField},
+              currentSortDir=${currentSortDir},
+
+              filters=${filters}
+
+          )}"></div>
+        </div>
+    </div>
+
+    <script>
+        function goToPage(pageNumber) {
+            // Tìm input hidden có id="pageInput" (đã được thêm trong common-filter.html)
+            const pageInput = document.getElementById('pageInput');
+            if (pageInput) {
+                pageInput.value = pageNumber;
+                // Form chứa input này chính là form filter
+                pageInput.form.submit();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

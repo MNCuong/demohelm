@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">Dashboard Monitor</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+</head>
+<style>
+    .alert-scroll {
+        overflow-y: hidden;
+    }
+
+    /* Khi hover mới cho scroll */
+    .alert-scroll:hover {
+        overflow-y: auto;
+    }
+
+    /* Scrollbar đẹp hơn (Chrome, Edge) */
+    .alert-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .alert-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .alert-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.25);
+        border-radius: 4px;
+    }
+
+    .alert-scroll:hover::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.4);
+    }
+</style>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800" th:text="#{page.dashboard.title}">Dashboard</h1>
+            <p class="text-gray-600" th:text="#{page.dashboard.subtitle}">
+                System health and performance overview.
+            </p>
+        </div>
+        <div class="text-right text-sm text-gray-500">
+            [[#{page.dashboard.last_updated}]]: <span id="last-updated-time">--:--:--</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow duration-200">
+            <div class="flex justify-between items-center mb-2">
+            <span class="text-gray-600 text-sm uppercase font-semibold" th:text="#{page.dashboard.throughput}">
+                Throughput
+            </span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <p id="throughput-count" class="text-3xl font-bold text-gray-900 mb-0 leading-none">...</p>
+                <span class="text-sm text-gray-500 leading-none">msgs/sec</span>
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+
+            <span id="throughput-subtitle" class="text-gray-500 text-sm block mt-2">
+            [[#{page.dashboard.throughput_subtitle}]]
+        </span>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-shadow duration-200">
+            <div class="flex justify-between items-center mb-2">
+            <span class="text-gray-600 text-sm uppercase font-semibold" th:text="#{page.dashboard.average_latency}">
+                Avg Latency
+            </span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <p id="avg-latency" class="text-3xl font-bold text-gray-900 mb-0 leading-none">...</p>
+                <span class="text-sm text-gray-500 leading-none">ms</span>
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 8v4l3 3m6 3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+
+            <span id="avg-latency-subtitle" class="text-gray-500 text-sm block mt-2">
+            [[#{page.dashboard.avg_latency_subtitle}]]
+        </span>
+        </div>
+
+
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- ================= Alerts ================= -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3l-6.93-12a2 2 0 00-3.46 0l-6.93 12a2 2 0 00-1.73 3z"/>
+                    </svg>
+                    <span th:text="#{page.dashboard.recent_system_alerts}">
+            Recent System Alerts
+        </span>
+                </h2>
+
+                <button
+                        onclick="clearAllAlerts()"
+                        class="text-xs px-3 py-1.5 rounded-md
+                   bg-red-50 text-red-600
+                   hover:bg-red-100
+                   border border-red-200
+                   transition">
+                    <span th:text="#{dashboard.alert.clear_all}">Clear All</span>
+                </button>
+            </div>
+
+            <div class="alert-scroll max-h-64 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b">
+                        <th class="py-3" th:text="#{dashboard.alert.severity}">Severity</th>
+                        <th class="py-3" th:text="#{dashboard.alert.message}">Message</th>
+                        <th class="py-3 text-right" th:text="#{dashboard.alert.time}">Time</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="alert-table-body"></tbody>
+                </table>
+            </div>
+
+        </div>
+
+
+        <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+                th:text="#{page.dashboard.core_components}">
+                Core Components
+            </h2>
+
+            <div id="core-components" class="space-y-2">
+            </div>
+
+        </div>
+
+    </div>
+
+    <th:block th:replace="~{fragments/chart_fragments :: electricityCharts}"></th:block>
+
+    <section id="table-container" th:fragment="statisticContent"
+             class="mt-12 bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-12">
+
+        <!-- Title -->
+        <div class="mb-6">
+            <h4 class="text-3xl font-bold text-gray-800" th:text="#{page.statistic-msg.title}">
+                Thống kê tin nhắn
+            </h4>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 text-center ">
+                <h3 class="text-gray-600 font-semibold mb-3" th:text="#{dashboard.summary.totalIn}">Tổng nhận </h3>
+                <p class="text-3xl font-bold " id="summary-total-in">
+                    [[${summary.totalIn}]]
+                </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 text-center ">
+                <h3 class="text-gray-600 font-semibold mb-3" th:text="#{dashboard.summary.totalOut}">Tổng gửi </h3>
+                <p class="text-3xl font-bold " id="summary-total-out">
+                    [[${summary.totalOut}]]
+                </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 text-center ">
+                <h3 class="text-gray-600 font-semibold mb-3" th:text="#{dashboard.summary.totalAll}">Tổng nhận gửi</h3>
+                <p class="text-3xl font-bold " id="summary-total-all">
+                    [[${summary.totalAll}]]
+                </p>
+            </div>
+        </div>
+        <div class="px-1 py-4">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                <form th:action="@{/home}" method="get"
+                      class="relative max-w-xl w-full flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+
+                        <input type="text"
+                               name="keyword"
+                               th:value="${filters['keyword']}"
+                               class="block w-full pl-10 pr-3 py-2 bg-white/80 border
+                  focus:border-blue-500 rounded-md text-gray-900
+                  placeholder-gray-500 focus:ring-2 focus:ring-cyan-500/20
+                  focus:bg-white transition-all duration-300 text-sm font-medium"
+                               th:placeholder="#{page.statistic-msg.search.dashboard.placeholder}"/>
+                    </div>
+
+                    <div class="relative">
+                        <select name="minutes"
+                                id="minutes-select"
+                                class="appearance-none bg-white/80 border border-gray-300
+               text-gray-900 text-sm font-medium rounded-md
+               px-3 py-2 pr-8
+               focus:outline-none focus:border-cyan-500
+               focus:ring-2 focus:ring-cyan-500/20
+               hover:border-cyan-400
+               transition-all duration-300 shadow-sm"
+                                onchange="updateTableByMinutes(this.value)">
+
+                            <option value="15" th:selected="${minutes == 15}">15 phút</option>
+                            <option value="30" th:selected="${minutes == 30}">30 phút</option>
+                            <option value="45" th:selected="${minutes == 45}">45 phút</option>
+                            <option value="60" th:selected="${minutes == 60}">60 phút</option>
+
+                            <option value="240" th:selected="${minutes == 240}">4 giờ</option>
+                            <option value="480" th:selected="${minutes == 480}">8 giờ</option>
+
+                            <option value="1440" th:selected="${minutes == 1440}">1 ngày</option>
+                            <option value="2880" th:selected="${minutes == 2880}">2 ngày</option>
+                            <option value="4320" th:selected="${minutes == 4320}">3 ngày</option>
+                        </select>
+
+                        <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+
+                    <button type="submit"
+                            class="absolute hidden right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                        Tìm kiếm
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- Table -->
+        <div  class="bg-white rounded-lg shadow-md overflow-x-auto">
+            <div class="px-6 py-4">
+                <div th:replace="~{fragments/common_table :: dynamicTable(
+                headers=${listHeaders},
+                fields=${listFields},
+                dataList=${listData},
+                idField=${listIdField},
+                currentSortField=${currentSortField},
+                currentSortDir=${currentSortDir},
+                pageData=${dashBoardPage},
+                filters=${filters},
+                showActions=${false}
+            )}"></div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div th:replace="~{fragments/common_pagination :: paginationControls(
+            pageData=${dashBoardPage},
+            currentSortField=${currentSortField},
+            currentSortDir=${currentSortDir},
+            filters=${filters}
+        )}"></div>
+        </div>
+    </section>
+
+
+</div>
+<th:block th:fragment="rowContent(item, idField)">
+
+    <!-- Thành viên -->
+    <td class="px-6 py-4 text-sm font-medium text-gray-900 text-center">
+        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full
+                     bg-slate-100 text-slate-800 border border-slate-200">
+            [[${item.refCode}]]
+        </span>
+    </td>
+
+    <!-- Tổng điện nhận (IN) -->
+    <td class="px-6 py-4 text-sm text-center">
+        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full
+                     bg-blue-100 text-blue-800 border border-blue-200 font-semibold">
+            [[${item.totalIn}]]
+        </span>
+    </td>
+
+    <!-- Tổng điện gửi (OUT) -->
+    <td class="px-6 py-4 text-sm text-center">
+        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full
+                     bg-purple-100 text-purple-800 border border-purple-200 font-semibold">
+            [[${item.totalOut}]]
+        </span>
+    </td>
+    <td class="px-6 py-4 text-sm text-center">
+        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full
+                     bg-purple-100 text-purple-800 border border-purple-200 font-semibold">
+            [[${item.total}]]
+        </span>
+    </td>
+
+</th:block>
+
+
+<!-- Scripts -->
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/common_table.js}"></script>
+    <script th:src="@{/js/monitor-core.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+    <script th:src="@{/js/core-component.js}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            DashboardRealtime.init(30000);
+        });
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function () {
+            // 1. Hàm thực thi AJAX trung tâm
+            async function executeLoad(url) {
+                const container = document.getElementById('table-container');
+                if (!container || !url) return;
+
+                console.log("AJAX Fetching:", url);
+                try {
+                    container.style.opacity = '0.5';
+                    container.style.pointerEvents = 'none'; // Chặn click khi đang load
+
+                    const response = await fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    if (response.ok) {
+                        const html = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Tìm fragment dựa trên ID table-container
+                        const newContent = doc.getElementById('table-container') || doc.body.firstElementChild;
+
+                        if (newContent) {
+                            // Cập nhật innerHTML để giữ nguyên thẻ <section id="table-container">
+                            container.innerHTML = newContent.innerHTML;
+                            // Cập nhật URL trình duyệt để có thể nhấn Back/F5
+                            window.history.pushState({}, '', url);
+                            console.log("AJAX Update Completed.");
+                        }
+                    }
+                } catch (err) {
+                    console.error("AJAX Error:", err);
+                } finally {
+                    container.style.opacity = '1';
+                    container.style.pointerEvents = 'auto';
+                }
+            }
+
+            // 2. Xử lý CLICK: Phân trang & Sắp xếp (Event Delegation)
+            document.addEventListener('click', function (e) {
+                // Tìm thẻ <a> có thuộc tính data-page (Phân trang) hoặc class sort-link (Sắp xếp)
+                const link = e.target.closest('a[data-page], .sort-link');
+                if (!link) return;
+
+                const container = document.getElementById('table-container');
+                if (container && container.contains(link)) {
+                    e.preventDefault();
+
+                    const page = link.getAttribute('data-page');
+                    const url = new URL(window.location.href);
+
+                    if (page) {
+                        // Nếu là phân trang
+                        url.searchParams.set('page', page);
+                    } else {
+                        // Nếu là link sắp xếp (href có sẵn URL)
+                        const sortUrl = new URL(link.href, window.location.origin);
+                        sortUrl.searchParams.forEach((val, key) => url.searchParams.set(key, val));
+                    }
+
+                    executeLoad(url.toString());
+                }
+            });
+
+            // 3. Xử lý CHANGE: Page Size
+            document.addEventListener('change', function (e) {
+                if (e.target.id === 'pageSizeSelect') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('page', '1');
+                    url.searchParams.set('size', e.target.value);
+                    executeLoad(url.toString());
+                }
+            });
+
+            // 4. Xử lý SUBMIT: Form Tìm kiếm
+            document.addEventListener('submit', function (e) {
+                const form = e.target.closest('form');
+                const container = document.getElementById('table-container');
+                if (form && container && container.contains(form)) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams(formData);
+                    const action = form.getAttribute('action') || window.location.pathname;
+                    executeLoad(`${action}?${params.toString()}`);
+                }
+            });
+
+            // Khởi tạo Monitor Core
+            document.addEventListener("DOMContentLoaded", () => {
+                const myTopic = "tcpserver.request";
+                if (typeof DashboardController !== 'undefined') {
+                    DashboardController.init(myTopic);
+                }
+            });
+        })();
+        /*]]>*/
+    </script>
+
+    <script>
+        function updateTableByMinutes(minutes) {
+            const container = document.getElementById('table-container');
+            if (!container) return;
+
+            // Hiệu ứng loading
+            container.style.opacity = '0.7';
+            container.style.pointerEvents = 'none';
+
+            // Lấy URL hiện tại và cập nhật tham số minutes
+            const url = new URL(window.location.href);
+            url.searchParams.set('minutes', minutes);
+            url.searchParams.set('page', '1'); // Reset về trang 1
+
+            // Gọi AJAX để load lại table
+            fetch(url.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    const newTableContainer = doc.getElementById('table-container');
+                    if (newTableContainer) {
+                        container.innerHTML = newTableContainer.innerHTML;
+                        window.history.pushState({}, '', url.toString());
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating table:', error);
+                    alert('Có lỗi xảy ra khi tải dữ liệu');
+                })
+                .finally(() => {
+                    container.style.opacity = '1';
+                    container.style.pointerEvents = 'auto';
+                });
+        }
+        function clearAllAlerts() {
+
+            if (!confirm("Bạn có chắc muốn xóa tất cả thông báo?")) return;
+
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+            fetch("/api/monitor/clear-all", {
+                method: "DELETE",
+                headers: {
+                    [header]: token
+                }
+            }).then(res => {
+                if (!res.ok) alert("Xóa cảnh báo thất bại!");
+                else {
+                    alert("Xóa cảnh báo thành công!");
+                    document.getElementById("alert-table-body").innerHTML = "";
+                }
+            });
+        }
+    </script>
+
+
+</th:block>
+
+</div>
+</body>
+
+</html>

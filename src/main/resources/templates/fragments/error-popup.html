@@ -1,0 +1,9 @@
+<div th:fragment="errorPopup" 
+     x-data="{ show: ${businessError != null} }" 
+     x-show="show"
+     x-init="if(show) setTimeout(() => show = false, 5000)" 
+     class="fixed top-4 right-4 bg-red-500 text-white px-4 py-3 rounded shadow-lg transition-all duration-300"
+     style="display: none;">
+    <p th:text="${businessError}">Đã có lỗi nghiệp vụ xảy ra</p>
+    <button @click="show = false" class="ml-2 font-bold">✕</button>
+</div>

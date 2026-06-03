@@ -1,0 +1,69 @@
+<div th:fragment="main-nav" class="flex flex-col items-center flex-1">
+    <nav class="flex-1 flex flex-col items-center space-y-2 py-4">
+
+        <div th:each="menu : ${sidebarMenus}" class="w-full flex justify-center">
+
+            <th:block th:with="
+                menuKey=${menu.objectName},
+                isChildActive=${menu.isLast != 'Y' and menu.children != null and #lists.contains(menu.children.![objectName], currentPage)},
+                isActive=${currentPage == menuKey or isChildActive}
+            ">
+
+                <a th:if="${menu.isLast == 'Y'}"
+                   th:href="@{/{path}(path=${menuKey})}"
+                   class="p-3 rounded-lg flex items-center justify-center transition-all duration-200"
+                   th:title="${menu.name}"
+                   th:classappend="${isActive} ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'">
+
+                    <div th:replace="~{fragments/icons :: ${isActive ? 'icon-' + menuKey + '-solid' : 'icon-' + menuKey + '-outline'}(customClasses='w-6 h-6')}"></div>
+                    <span class="sr-only" th:text="${menu.name}"></span>
+                </a>
+
+                <div th:if="${menu.isLast != 'Y'}"
+                     x-data="{ open: false }"
+                     @click.away="open = false"
+                     class="relative">
+
+                    <button @click="open = !open"
+                            type="button"
+                            class="p-3 rounded-lg flex items-center justify-center transition-all duration-200 outline-none cursor-pointer"
+                            th:title="${menu.name}"
+                            th:classappend="${isActive} ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'">
+
+                        <div th:replace="~{fragments/icons :: ${isActive ? 'icon-' + menuKey + '-solid' : 'icon-' + menuKey + '-outline'}(customClasses='w-6 h-6')}"></div>
+                    </button>
+
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 translate-x-[-10px]"
+                         x-transition:enter-end="opacity-100 scale-100 translate-x-0"
+                         class="absolute left-full ml-3 top-0 w-60 py-2 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-black/5 z-[100]"
+                         x-cloak
+                         style="display: none;">
+
+                        <div class="px-4 py-2 mb-1 border-b border-gray-50">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]" th:text="${menu.name}"></p>
+                        </div>
+
+                        <div class="space-y-0.5 px-1">
+                            <a th:each="child : ${menu.children}"
+                               th:href="@{/{parent}/{child}(parent=${menuKey}, child=${child.objectName})}"
+                               class="group flex items-center px-3 py-2.5 text-sm rounded-lg transition-all duration-200"
+                               th:with="isCurrentPage=${currentPage == child.objectName}"
+                               th:classappend="${isCurrentPage}
+                                            ? 'bg-orange-50 text-orange-600 font-semibold'
+                                            : 'text-gray-600 hover:bg-gray-50 hover:text-orange-500'">
+
+                                <div class="w-1.5 h-1.5 rounded-full mr-3 transition-all duration-200"
+                                     th:classappend="${isCurrentPage} ? 'bg-orange-500 scale-110' : 'bg-gray-200 group-hover:bg-orange-300'"></div>
+
+                                <span th:text="${child.name}"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </th:block>
+        </div>
+    </nav>
+</div>

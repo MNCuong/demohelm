@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="render(statusCounts)"
+     class="grid gap-4 mb-6"
+     style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+
+    <div th:each="c : ${statusCounts}"
+         class="relative bg-white p-5 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-between min-h-[120px]">
+        <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+             th:style="|background-color: ${c.color};|"></div>
+
+        <div>
+            <h3 class="text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-2"
+                th:text="#{${c.label}}"></h3>
+
+            <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-bold text-slate-800" th:text="${c.count}"></span>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="electricityCharts">
+
+    <section class="mt-12 bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-12">
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-6"
+            th:text="#{chart.electric.title}">
+            Biểu đồ điện
+        </h2>
+
+        <!-- GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+
+            <!-- ================= REALTIME ================= -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col h-full">
+
+                <h3 class="font-semibold text-gray-700 mb-4"
+                    th:text="#{chart.electric.realtime}">
+                    Realtime (30m)
+                </h3>
+
+                <!-- Filter -->
+                <div class="flex flex-col sm:flex-row sm:flex-wrap items-end gap-4 mb-4">
+
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-sm text-gray-600" th:text="#{filter.date}">Ngày</label>
+                        <input type="date" id="startOfDay"
+                               onchange="loadRealtimeChart()"
+                               class="border rounded-md px-2 py-1 text-sm w-full">
+                    </div>
+
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-sm text-gray-600" th:text="#{filter.interval}">Khoảng thời gian
+                            (phút)</label>
+                        <select id="minuteParam" onchange="loadRealtimeChart()"
+                                class="border rounded-md px-2 py-1 text-sm w-full">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30" selected>30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                            <option value="60">60</option>
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[120px]">
+                        <button type="button" onclick="clearIntervalParam()"
+                                class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1 rounded-md text-sm w-full"
+                                th:text="#{filter.clear}">
+                            Xóa khoảng thời gian
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="relative flex-1 w-full min-h-[220px]">
+                    <canvas id="realtimeChart"></canvas>
+                </div>
+
+
+            </div>
+
+            <!-- ================= DAILY ================= -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col h-full">
+
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800"
+                        th:text="#{chart.electric.daily}">
+                        Hàng ngày
+                    </h3>
+
+                    <div class="flex items-end gap-3">
+
+                        <div class="flex flex-col">
+                            <label class="text-xs text-gray-500 mb-1"
+                                   th:text="#{filter.start_date}">
+                                Từ ngày
+                            </label>
+                            <input type="date" id="startDate"
+                                   onchange="filterDailyChart()"
+                                   class="border border-gray-300 rounded-md px-2 py-1 text-sm">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label class="text-xs text-gray-500 mb-1"
+                                   th:text="#{filter.end_date}">
+                                Đến ngày
+                            </label>
+                            <input type="date" id="endDate"
+                                   onchange="filterDailyChart()"
+                                   class="border border-gray-300 rounded-md px-2 py-1 text-sm">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="relative flex-1 w-full min-h-[220px]">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= SCRIPT ================= -->
+        <script th:src="@{/js/chart.umd.min.js}"></script>
+
+        <script th:inline="javascript">
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {duration: 500, easing: 'easeOutQuart'},
+                interaction: {mode: 'nearest', intersect: false},
+                scales: {
+                    x: {
+                        grid: {display: false},
+                        ticks: {color: '#6b7280', font: {size: 12}}
+                    },
+                    y: {
+                        grid: {color: 'rgba(200,200,200,0.2)'},
+                        ticks: {color: '#6b7280', font: {size: 12}}
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 8,
+                        displayColors: false
+                    },
+                    legend: {display: false}
+                }
+            };
+
+            const LABEL_REALTIME = [[#{chart.electric.realtime.label}]];
+            const LABEL_DAILY = [[#{chart.electric.daily.label}]];
+
+            /* ================= REALTIME ================= */
+            const ctxRealtime = document.getElementById('realtimeChart').getContext('2d');
+            const gradientRealtime = ctxRealtime.createLinearGradient(0, 0, 0, 250);
+            gradientRealtime.addColorStop(0, 'rgba(54, 162, 235, 0.4)');
+            gradientRealtime.addColorStop(1, 'rgba(54, 162, 235, 0.05)');
+
+            const realtimeChart = new Chart(ctxRealtime, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: LABEL_REALTIME,
+                        data: [],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: gradientRealtime,
+                        fill: true,
+                        tension: 0,
+                        pointRadius: 3
+                    }]
+                },
+                options: commonOptions
+            });
+
+            /* ================= DAILY ================= */
+            const ctxDaily = document.getElementById('dailyChart').getContext('2d');
+            const gradientDaily = ctxDaily.createLinearGradient(0, 0, 0, 250);
+            gradientDaily.addColorStop(0, 'rgba(153, 102, 255, 0.4)');
+            gradientDaily.addColorStop(1, 'rgba(153, 102, 255, 0.05)');
+
+            const dailyChart = new Chart(ctxDaily, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: LABEL_DAILY,
+                        data: [],
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: gradientDaily,
+                        fill: true,
+                        tension: 0,
+                        pointRadius: 3
+                    }]
+                },
+                options: commonOptions
+            });
+
+            let currentDate = null;
+
+            async function loadRealtimeChart() {
+                const startOfDay = document.getElementById('startOfDay').value;
+                const interval = document.getElementById('minuteParam').value;
+
+                if (startOfDay) currentDate = startOfDay;
+
+                const params = new URLSearchParams();
+                if (currentDate) params.append("startOfDay", currentDate);
+                if (interval) params.append("minuteParam", interval);
+
+                const res = await fetch('/dashboard/realtime?' + params);
+                const json = await res.json();
+
+                realtimeChart.data.labels = json.labels;
+                realtimeChart.data.datasets[0].data = json.data;
+                realtimeChart.update();
+            }
+
+            async function filterDailyChart() {
+                const start = document.getElementById('startDate').value;
+                const end = document.getElementById('endDate').value;
+
+                let url = '/dashboard/daily';
+                if (start && end) url += `?startDate=${start}&endDate=${end}`;
+
+                const res = await fetch(url);
+                const json = await res.json();
+
+                dailyChart.data.labels = json.labels;
+                dailyChart.data.datasets[0].data = json.data;
+                dailyChart.update();
+            }
+
+            function clearIntervalParam() {
+                document.getElementById('minuteParam').value = '30';
+                loadRealtimeChart();
+            }
+
+            loadRealtimeChart();
+            filterDailyChart();
+            setInterval(loadRealtimeChart, 30000);
+            setInterval(filterDailyChart, 30000);
+        </script>
+
+    </section>
+
+</th:block>
+</html>

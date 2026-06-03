@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.msg.title}">Message Trace Portal</title>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+
+    <div class="relative mb-6">
+        <!-- Bên trái -->
+        <div>
+            <h1 class="text-4xl font-extrabold bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+                th:text="#{page.msg.title}">
+                Message Trace Portal
+            </h1>
+            <p class="mt-1 text-sm text-gray-500" th:text="#{page.msg.subtitle}">
+                Tra cứu và xem chi tiết lịch sử giao dịch.
+            </p>
+        </div>
+        <!-- Button -->
+        <form id="resendForm"
+              method="post"
+              action="/messages/resend-pending"
+              sec:authorize="!hasRole('MONITOR')">
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}"/>
+            <input type="hidden" name="orgSeqIds" id="orgSeqIdsInput">
+            <button type="button"
+                    onclick="submitResend()"
+                    class="absolute right-0 bottom-0 px-5 py-2 rounded-md
+           bg-cyan-600 text-white
+           font-semibold shadow-md hover:bg-cyan-700 transition"
+                    th:text="#{button.resendSelected}">
+                Resend Selected
+            </button>
+        </form>
+    </div>
+    <div th:replace="~{fragments/common-status-cards :: render(statusCounts=${statusCounts})}"></div>
+    <div th:replace="~{fragments/common-filter :: render(
+        actionUrl='/messages/msg-history',
+        configs=${filterConfigs},
+        params=${currentParams}
+    )}"></div>
+    <div class="flex items-center text-sm
+            text-cyan-800 px-3 py-1.5 ">
+
+        <span th:text="#{global.total.records}"></span>
+        <span class="ml-1 font-bold text-cyan-700 text-base"
+              th:text="${transactionPage.totalElements}"></span>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-max text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-500 uppercase bg-gray-100 border-b border-gray-200">
+                <tr>
+                    <th scope="col" class="px-6 py-4 font-semibold">
+                        <input type="checkbox" id="checkAll" onclick="toggleAll(this)">
+                    </th>
+
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.refseqid}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.stpRefId}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.trfCode}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.refSender}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.refReceiver}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.status}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.feedback}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.txdate}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.acknak.table.header.updateDate}"></th>
+                    <th scope="col" class="px-6 py-4 font-semibold text-center"
+                        th:text="#{page.msg.table.header.inoutflag }"></th>
+
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+
+                <tr th:each="item : ${transactionPage.content}" class="hover:bg-blue-50 transition-colors duration-150">
+                    <td class="px-6 py-4 text-center">
+                        <input type="checkbox"
+                               class="row-check"
+                               th:value="${item.orgSeqId}"
+                               onclick="syncHeaderCheckbox()">
+                    </td>
+                    <td class="px-6 py-4 font-medium text-cyan-600 whitespace-nowrap text-center">
+                        <a th:href="@{/messages/msg-detail(seqId=${item.seqId})}"
+                           class="hover:underline"
+                           th:text="${item.refSeqId}">
+
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 text-center font-mono font-bold text-gray-700"
+                        th:text="${item.stpRefId ?: '-'}">
+                    </td>
+                    <td class="px-6 py-4 text-center font-mono font-bold text-gray-700" th:text="${item.trfCode}">
+                    </td>
+
+                    <td class="px-6 py-4 text-center" th:text="${item.usrName}"></td>
+
+                    <td class="px-6 py-4 text-center" th:text="${item.refReceiver}"></td>
+
+                    <td class="px-6 py-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+      th:classappend="${
+        item.status == 'E'
+          ? 'bg-red-100 text-red-800 border-red-300'
+
+        : item.status == 'N'
+          ? 'bg-orange-100 text-orange-800 border-orange-300'
+
+        : item.status == 'P'
+          ? 'bg-green-100 text-green-800 border-green-300'
+
+        : item.status == 'P.E.N' or item.status == 'N'
+          ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+
+        : item.status == 'P.E.S' or item.status == 'S'
+          ? 'bg-blue-100 text-blue-800 border-blue-300'
+
+        : 'bg-gray-100 text-gray-800 border-gray-300'
+      }"
+
+      th:text="${#messages.msg('page.msg.table.status.' + item.status)}">
+</span>
+
+
+                    </td>
+                    <td class="px-6 py-4">
+    <span
+            th:if="${item.feedback != null and !#strings.isEmpty(item.feedback)}"
+            class="inline-flex items-center justify-center
+               px-3 py-1 rounded-lg
+               text-xs font-semibold
+               bg-gray-100 text-gray-700
+               border border-gray-200
+               whitespace-normal break-words max-w-xs
+               text-center"
+            th:text="${item.feedback}">
+    </span>
+                    </td>
+
+
+                    <td class="px-6 py-4 text-center"
+                        th:text="${#temporals.format(item.txDate, 'dd/MM/yyyy HH:mm:ss')}">
+                    </td>
+                    <td class="px-6 py-4 text-center"
+                        th:text="${#temporals.format(item.createTst, 'dd/MM/yyyy HH:mm:ss')}">
+                    </td>
+
+                    <td class="px-6 py-4 text-center" th:switch="${item.inOutFlag}">
+    <span th:case="'I'"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                 bg-indigo-100 text-indigo-700 border border-indigo-200">
+        [[#{msg.history.status.i}]]
+    </span>
+
+                        <span th:case="'E'"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                 bg-teal-100 text-teal-700 border border-teal-200">
+        [[#{msg.history.status.e}]]
+    </span>
+
+                        <span th:case="*"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                 bg-gray-100 text-gray-600 border border-gray-200">
+        -
+    </span>
+                    </td>
+
+                </tr>
+
+                <tr th:if="${transactionPage.empty}">
+                    <td colspan="12" class="px-6 py-12 text-center text-gray-400"><span
+                            th:text="#{page.msg.table.no_data}">Không tìm thấy dữ liệu</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4">
+            <div th:replace="~{fragments/common_pagination :: paginationControls(
+              pageData=${transactionPage},
+              currentSortField=${currentSortField},
+              currentSortDir=${currentSortDir},
+
+              filters=${filters}
+
+          )}"></div>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>
+<script th:inline="javascript">
+    const i18n = {
+        resendTitle: [[#{swal.resend.title}]],
+    resendText: [[#{swal.resend.text}]],
+    resendConfirm: [[#{swal.resend.confirm}]],
+    resendCancel: [[#{swal.resend.cancel}]],
+    resendNoSelect: [[#{swal.resend.noselect}]]
+    };
+</script>
+
+<script>
+    function submitResend() {
+        const selectedIds = getSelectedRows();
+        if (selectedIds.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: i18n.resendNoSelect
+            });
+            return;
+        }
+        Swal.fire({
+            icon: 'question',
+            title: i18n.resendTitle,
+            text: i18n.resendText,
+            showCancelButton: true,
+            confirmButtonText: i18n.resendConfirm,
+            cancelButtonText: i18n.resendCancel
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById("orgSeqIdsInput").value =
+                    selectedIds.join(",");
+
+                document.getElementById("resendForm").submit();
+            }
+        });
+    }
+</script>
+
+<script>
+    // Click checkbox header
+    function toggleAll(source) {
+        const checkboxes = document.querySelectorAll('.row-check');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+
+    // Khi click từng dòng
+    function syncHeaderCheckbox() {
+        const checkboxes = document.querySelectorAll('.row-check');
+        const header = document.getElementById('checkAll');
+
+        const total = checkboxes.length;
+        const checked = document.querySelectorAll('.row-check:checked').length;
+
+        // Nếu tất cả đều được chọn
+        header.checked = total === checked;
+    }
+
+    function getSelectedRows() {
+        const selected = [];
+        document.querySelectorAll('.row-check:checked')
+            .forEach(cb => selected.push(cb.value));
+        return selected;
+    }
+
+</script>

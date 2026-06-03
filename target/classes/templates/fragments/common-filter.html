@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="render(actionUrl, configs, params)">
+
+  <form th:action="@{${actionUrl}}" method="get"
+        th:data-error-date="#{filter.error.dateRange}"
+        onsubmit="return handleFilterSubmit(this)"
+        class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 transition-all hover:shadow-md">
+
+    <div class="flex items-center mb-5 border-b border-gray-100 pb-3">
+      <svg class="w-5 h-5 text-cyan-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <h3 class="text-lg font-bold text-gray-800" th:text="#{filter.header.title}">Bộ lọc tìm kiếm</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+
+      <th:block th:each="config : ${configs}">
+
+        <div th:if="${config.type.name() == 'TEXT'}">
+          <label class="block mb-2 text-sm font-medium text-gray-700"
+                 th:text="#{__${'filter.label.' + config.label}__}">Label</label>
+          <input type="text"
+                 th:name="${config.field}"
+                 th:value="${params != null ? params.get(config.field) : ''}"
+                 th:placeholder="#{__${'filter.label.' + config.label}__}"
+                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+        </div>
+
+        <div th:if="${config.type.name() == 'SELECT'}">
+          <label class="block mb-2 text-sm font-medium text-gray-700"
+                 th:text="#{__${'filter.label.' + config.label}__}">Label</label>
+          <select th:name="${config.field}"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+            <option value="" th:text="#{filter.option.all}">-- Tất cả --</option>
+
+            <option th:each="opt : ${config.options}"
+                    th:value="${opt.value}"
+                    th:text="${#messages.msgOrNull(opt.label) != null ? #messages.msgOrNull(opt.label) : opt.label}"
+                    th:selected="${params != null && params.get(config.field) == opt.value}">
+            </option>
+          </select>
+        </div>
+
+        <th:block th:if="${config.type.name() == 'DATE_RANGE'}">
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700"
+                   th:text="#{filter.label.dateFrom(#{__${'filter.label.' + config.label}__})}">Từ ngày</label>
+            <input type="date"
+                   th:name="${config.field + 'From'}"
+                   th:value="${params != null ? params.get(config.field + 'From') : ''}"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+          </div>
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700"
+                   th:text="#{filter.label.dateTo(#{__${'filter.label.' + config.label}__})}">Đến ngày</label>
+            <input type="date"
+                   th:name="${config.field + 'To'}"
+                   th:value="${params != null ? params.get(config.field + 'To') : ''}"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+          </div>
+        </th:block>
+
+      </th:block>
+
+      <div class="flex items-end">
+        <input type="hidden" name="page" th:value="${params != null ? params.get('page') : '1'}" />
+        <input type="hidden" name="size" th:value="${params != null ? params.get('size') : '10'}" />
+          <button type="submit"
+                  class="w-full flex items-center justify-center gap-2.5 text-white bg-cyan-600
+               hover:bg-cyan-700 font-medium rounded-lg text-sm px-6 py-2.5
+               focus:outline-none shadow-md transition-transform transform active:scale-95">
+              <!-- Icon -->
+              <svg class="h-5 w-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+              </svg>
+              <!-- Text -->
+              <span th:text="#{filter.button.search}">Tìm kiếm</span>
+          </button>
+
+      </div>
+    </div>
+  </form>
+
+  <script>
+      function validateDateRange(form) {
+          // Lấy message lỗi từ attribute data-error-date
+          const errorMsg = form.dataset.errorDate || "Ngày bắt đầu không được lớn hơn ngày kết thúc!";
+
+          const fromInputs = form.querySelectorAll('input[name$="From"]');
+
+          for (let fromInput of fromInputs) {
+              const fromVal = fromInput.value;
+              const baseName = fromInput.name.substring(0, fromInput.name.length - 4);
+              const toInput = form.querySelector(`input[name="${baseName}To"]`);
+
+              if (toInput) {
+                  const toVal = toInput.value;
+                  if (fromVal && toVal) {
+                      if (new Date(fromVal) > new Date(toVal)) {
+                          alert(errorMsg); // Sử dụng message đã dịch
+                          fromInput.focus();
+                          return false;
+                      }
+                  }
+              }
+          }
+          return true;
+      }
+
+      function handleFilterSubmit(form) {
+          // Validate date range trước
+          if (!validateDateRange(form)) {
+              return false;
+          }
+
+          // Submit form bình thường, nhưng sẽ clean URL sau khi load
+          // URL sẽ được clean bởi script trong pagination hoặc script chung
+          return true;
+      }
+
+      // Clean URL sau khi page load (nếu có params từ filter)
+      // Sử dụng DOMContentLoaded để đảm bảo chạy sau khi page đã load
+      function cleanUrlAfterFilterLoad() {
+          if (window.location.search && window.location.search.length > 1) {
+              // Đợi một chút để đảm bảo page đã render xong
+              setTimeout(function() {
+                  if (window.history && window.history.replaceState) {
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                  }
+              }, 50);
+          }
+      }
+
+      if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', cleanUrlAfterFilterLoad);
+      } else {
+          cleanUrlAfterFilterLoad();
+      }
+  </script>
+</div>
+</body>
+</html>

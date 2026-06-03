@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">Chi tiết điện</title>
+</head>
+<style>
+    @keyframes flow-line {
+        0% {
+            transform: translateY(-100%);
+        }
+        100% {
+            transform: translateY(100%);
+        }
+    }
+
+    .timeline-glow {
+        background: linear-gradient(to bottom, transparent, #10b981, transparent);
+        animation: flow-line 3s infinite linear;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+</style>
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-4xl font-extrabold text-transparent-black bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+                th:text="#{page.msg.detail.title}"></h1>
+            <p class="mt-1 text-sm text-gray-500" th:text="#{page.msg.detail.header}"></p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-md shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2"
+            th:text="#{page.msg.detail.section.info}"></h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.trfCode}"></label>
+                <p class="mt-1 text-sm font-bold text-gray-900" th:text="${msg.trfCode}">MTxxx</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.txdate}"></label>
+                <p class="mt-1 text-sm text-gray-900" th:text="${#temporals.format(msg.txDate, 'dd/MM/yyyy HH:mm:ss')}">
+                    ...</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.status}"></label>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                      th:classappend="${
+        msg != null and msg.status == 'E'
+          ? 'bg-red-100 text-red-800 border-red-300'
+
+        : msg != null and msg.status == 'N'
+          ? 'bg-orange-100 text-orange-800 border-orange-300'
+
+        : msg != null and msg.status == 'P'
+          ? 'bg-green-100 text-green-800 border-green-300'
+
+        : msg != null and msg.status == 'P.E.N'
+          ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+
+        : msg != null and msg.status == 'P.E.S'
+          ? 'bg-blue-100 text-blue-800 border-blue-300'
+
+        : 'bg-gray-100 text-gray-800 border-gray-300'
+      }"
+                      th:text="${msg != null and msg.status != null
+          ? #messages.msg('page.msg.table.status.' + msg.status)
+          : '-'}">
+</span>
+
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.refSender}"></label>
+                <p class="mt-1 text-sm text-gray-900" th:text="${msg.refSender}">...</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.refReceiver}"></label>
+                <p class="mt-1 text-sm text-gray-900" th:text="${msg.refReceiver}">...</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase"
+                       th:text="#{page.msg.table.header.seqId}"></label>
+                <p class="mt-1 text-sm text-gray-900" th:text="${msg.seqId}">...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        <div class="lg:col-span-3  rounded-md bg-white border border-slate-50 p-8 transition-all duration-300">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-6 bg-cyan-600 rounded-full"></div>
+                <h2 class="text-xl font-bold text-slate-800" th:text="#{page.msg.detail.section.detail}"></h2>
+            </div>
+
+            <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-inner bg-slate-50">
+        <textarea
+                class="w-full h-[650px] bg-slate-50/50 border-0 text-[13px] font-mono text-slate-600 p-6 focus:ring-0 rounded-md resize-none leading-relaxed"
+                readonly
+                th:text="${msgContent}"></textarea>
+            </div>
+
+            <div class="mt-8 flex items-center justify-end gap-3">
+                <a th:href="@{/messages/msg-history}"
+                   class="flex items-center gap-2 px-6 py-2.5 border border-slate-200 text-sm font-bold rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-all focus:outline-none shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    [[#{global.button.back}]]
+                </a>
+
+                <button type="button"
+                        id="resendBtn"
+                        th:data-id="${msg.autoId}"
+                        sec:authorize="!hasRole('MONITOR')"
+                        th:if="${msg.inOutFlag != 'E'}"
+                        class="flex items-center gap-2 px-6 py-2.5 border border-transparent text-sm font-bold
+                   rounded-md text-white bg-cyan-600 hover:opacity-80
+                   focus:outline-none transform active:scale-95 transition-all shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    [[#{page.msg.detail.resend}]]
+                </button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+            <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center gap-3">
+                <div class="p-2 bg-emerald-100 rounded-lg">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider"
+                        th:text="#{status.timeline.title}">Luồng trạng thái điện</h2>
+                    <p class="text-[10px] text-slate-500 font-medium" th:text="#{status.timeline.subtitle}">Chi tiết
+                        tiến trình xử lý thời gian thực</p>
+                </div>
+            </div>
+
+            <div class="p-10 max-w-2xl mx-auto bg-white border border-slate-50">
+                <div class="relative pl-14">
+
+                    <div class="absolute left-0 top-0 bottom-0 w-[44px] flex justify-center">
+                        <div class="w-[4px] h-full bg-slate-100 rounded-full overflow-hidden relative">
+                            <div class="absolute top-0 left-0 w-full bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600 transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                                 th:style="'height: ' + (${processStatus == 'S'} ? '100%' : (${processStatus == 'P'} ? '75%' : (${processStatus == 'E'} ? '40%' : '18%')))">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative mb-6 group" th:if="${inOutFlag == 'I'}">
+                        <div class="absolute -left-[55px] z-10 w-11 h-11 rounded-2xl bg-emerald-500 border-4 border-white shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                            </svg>
+                        </div>
+
+                        <div class="flex flex-col p-5 rounded-2xl bg-slate-50/50 border border-transparent
+            group-hover:bg-white group-hover:border-slate-100 group-hover:shadow-md transition-all duration-300">
+
+                            <div class="flex flex-col gap-2 lg:flex-row lg:justify-between lg:items-center">
+
+                                <!-- LEFT -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-[15px] font-extrabold text-slate-800"
+                                        th:text="#{status.step.receive}">
+                                        Tiếp nhận bản tin
+                                    </h3>
+
+                                    <p class="text-xs text-slate-500 mt-1 font-medium"
+                                       th:text="#{status.step.receive.desc}">
+                                        Hệ thống đã ghi nhận file đầu vào
+                                    </p>
+                                </div>
+
+                                <!-- RIGHT TIME -->
+                                <div class="flex-shrink-0 lg:text-right">
+            <span th:if="${timeStampN != null}"
+                  class="inline-block text-[11px] font-mono font-bold
+                         bg-white px-3 py-1.5 rounded-lg border border-slate-100
+                         text-slate-400 shadow-sm whitespace-nowrap"
+                  th:text="${#temporals.format(timeStampN, 'dd/MM/yyyy HH:mm:ss')}">
+            </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="relative mb-6 group" th:if="${inOutFlag == 'I'}">
+
+                        <!-- ICON -->
+                        <div
+                                class="absolute -left-[55px] z-10 w-11 h-11 rounded-2xl border-4 border-white shadow-lg
+           flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                                th:classappend="
+        ${processStatus == 'P'} ? 'bg-emerald-500' :
+        (${processStatus == 'E'} ? 'bg-rose-500' :
+        'bg-amber-500')">
+
+                            <!-- P -->
+                            <svg th:if="${processStatus == 'P'}"
+                                 class="w-6 h-6 text-white"
+                                 fill="none" stroke="currentColor" stroke-width="2.5"
+                                 viewBox="0 0 24 24">
+                                <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+
+                            <!-- E -->
+                            <svg th:if="${processStatus == 'E'}"
+                                 class="w-6 h-6 text-white"
+                                 fill="none" stroke="currentColor" stroke-width="2.5"
+                                 viewBox="0 0 24 24">
+                                <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                            </svg>
+
+                            <!-- N: Đang chờ xử lý -->
+                            <div th:if="${processStatus == 'N'}"
+                                 class="w-5 h-5
+            border-[3px]
+            border-white/40
+            border-t-white/80
+            rounded-full
+            animate-spin">
+                            </div>
+
+
+                        </div>
+
+                        <!-- ✅ CONTENT (đặt đúng cấp) -->
+                        <div class="flex flex-col p-5 rounded-2xl bg-slate-50/50 border border-transparent
+                group-hover:bg-white group-hover:border-slate-100
+                group-hover:shadow-md transition-all duration-300">
+
+                            <div class="flex flex-col gap-2 lg:flex-row lg:justify-between lg:items-start">
+
+                                <!-- LEFT -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-[15px] font-extrabold tracking-tight"
+                                        th:classappend="
+        ${processStatus == 'E'} ? 'text-rose-600' :
+        (${processStatus == 'N'} ? 'text-amber-600' :
+        'text-emerald-600')">
+
+
+                                    <span th:if="${processStatus == 'E'}" th:text="#{status.process.E.title}"></span>
+                                        <span th:if="${processStatus == 'N'}" th:text="#{status.process.N.title}"></span>
+                                        <span th:if="${processStatus == 'P'}" th:text="#{status.process.P.title}"></span>
+                                    </h3>
+
+                                    <p class="text-xs text-slate-500 mt-1 font-medium">
+                                        <span th:if="${processStatus == 'E'}" th:text="#{status.process.E.desc}"></span>
+                                        <span th:if="${processStatus == 'N'}" th:text="#{status.process.N.desc}"></span>
+                                        <span th:if="${processStatus == 'P'}" th:text="#{status.process.P.desc}"></span>
+                                    </p>
+                                </div>
+
+                                <!-- RIGHT TIME -->
+                                <div class="flex-shrink-0 lg:text-right flex flex-col gap-1">
+                                    <span th:if="${timeStampE != null}" class="text-[11px] font-mono ..."></span>
+                                    <span th:if="${timeStampP != null}" class="text-[11px] font-mono ..."></span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="relative mb-6 group" th:if="${inOutFlag == 'I'}">
+                        <div class="absolute -left-[55px] z-10 w-11 h-11 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                             th:classappend="${#strings.trim(ackNakStatus) == 'S'} ? 'bg-emerald-500' :
+                        (${#strings.trim(ackNakStatus) == 'N' || ackNakStatus == null} ? 'bg-amber-400' : 'bg-rose-500')">
+
+                            <svg th:if="${#strings.trim(ackNakStatus) == 'S'}" class="w-6 h-6 text-white" fill="none"
+                                 stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+
+                            <div th:if="${#strings.trim(ackNakStatus) == 'N' || ackNakStatus == null}"
+                                 class="w-5 h-5 border-[3px] border-white/30 border-t-white rounded-full animate-spin">
+                            </div>
+
+                            <svg th:if="${ackNakStatus != null && #strings.trim(ackNakStatus) != 'S' && #strings.trim(ackNakStatus) != 'N'}"
+                                 class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5"
+                                 viewBox="0 0 24 24">
+                                <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                            </svg>
+                        </div>
+
+                        <div class="flex flex-col p-5 rounded-2xl bg-slate-50/50 border border-transparent group-hover:bg-white group-hover:border-slate-100 group-hover:shadow-md transition-all duration-300">
+                            <div class="flex items-start gap-4">
+                                <!-- LEFT CONTENT -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-[15px] font-extrabold"
+                                        th:classappend="${#strings.trim(ackNakStatus) == 'S'} ? 'text-slate-800' :
+               (${#strings.trim(ackNakStatus) == 'N' || ackNakStatus == null} ? 'text-amber-600' : 'text-rose-600')"
+                                        th:text="#{status.acknak.title}">
+                                        Phản hồi ACK/NAK
+                                    </h3>
+
+                                    <p class="text-xs mt-1 font-medium text-slate-500 break-words">
+            <span th:if="${ackNakStatus == null}" th:text="#{status.wait.desc}">
+                Đang chờ phản hồi từ hệ thống...
+            </span>
+                                        <span th:unless="${ackNakStatus == null}" th:text="#{status.acknak.desc}">
+                Trạng thái xác thực từ Gateway
+            </span>
+                                    </p>
+                                </div>
+
+                                <!-- RIGHT TIME / STATUS -->
+                                <div class="flex-shrink-0 text-right">
+        <span th:if="${ackNakTime != null}"
+              class="text-[11px] font-mono bg-white px-2 py-1 rounded
+         text-slate-400 border border-slate-100 shadow-sm
+         whitespace-normal lg:whitespace-nowrap
+         max-w-[140px] lg:max-w-none break-all"
+              th:text="${#temporals.format(ackNakTime , 'dd/MM/yyyy HH:mm:ss')}">
+        </span>
+
+                                    <span th:if="${ackNakStatus == null}"
+                                          class="block mt-1 text-[10px] font-bold text-amber-500 uppercase tracking-wider animate-pulse">
+            Waiting...
+        </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative mb-6 group" th:if="${msg.trfCode != '599.RECONCILE_INQUIRY'} and ${msg.inOutFlag=='E'}">
+                        <div class="absolute -left-[55px] z-10 w-11 h-11 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                             th:classappend="${sentMsgStatus == 'S' or sentMsgStatus == 'N'} ? 'bg-emerald-500' : (${sentMsgStatus == null} ? 'bg-slate-200 shadow-none' : 'bg-rose-500')">
+                            <svg class="w-6 h-6 text-white" th:if="${sentMsgStatus == 'S' or sentMsgStatus == 'N'}"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                            </svg>
+                            <svg class="w-6 h-6 text-slate-400" th:if="${sentMsgStatus == null}" fill="none"
+                                 stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"/>
+                            </svg>
+                            <svg class="w-6 h-6 text-white"
+                                 th:if="${sentMsgStatus != null && sentMsgStatus != 'S' && sentMsgStatus != 'N'}"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75A11.959 11.959 0 0112 2.714z"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col p-5 rounded-2xl bg-slate-50/50 border border-transparent
+            group-hover:bg-white group-hover:border-slate-100 group-hover:shadow-md transition-all duration-300">
+
+                            <div class="flex flex-col gap-2 lg:flex-row lg:justify-between lg:items-start">
+
+                                <!-- LEFT -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-[15px] font-extrabold"
+                                        th:classappend="${sentMsgStatus == 'S' or sentMsgStatus == 'N'}
+                                ? 'text-slate-800'
+                                : (${sentMsgStatus == null}
+                                    ? 'text-slate-300'
+                                    : 'text-rose-600')"
+                                        th:text="#{status.sent.title}">
+                                        Truyền tin ngoại mạng
+                                    </h3>
+
+                                    <p class="text-xs mt-1 text-slate-500 font-medium"
+                                       th:text="#{status.sent.desc}">
+                                        Đang chuyển dữ liệu tới kênh đích
+                                    </p>
+                                </div>
+
+                                <!-- RIGHT TIME -->
+                                <div class="flex-shrink-0 lg:text-right">
+            <span th:if="${sentMsgTime != null}"
+                  class="inline-block text-[11px] font-mono bg-white px-2 py-1 rounded
+                         text-slate-400 border border-slate-100 shadow-sm whitespace-nowrap"
+                  th:text="${#temporals.format(sentMsgTime, 'dd/MM/yyyy HH:mm:ss')}">
+            </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="relative mb-6 group" th:if="${msg.trfCode != '599.RECONCILE_INQUIRY'} and ${msg.inOutFlag=='E'}">
+                        <div class="absolute -left-[55px] z-10 w-11 h-11 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                             th:classappend="${sentMsgStatus == 'S'} ? 'bg-emerald-600' : (${sentMsgStatus == 'N'} ? 'bg-amber-400' : (${sentMsgStatus == null} ? 'bg-slate-200' : 'bg-rose-500'))">
+                            <svg th:if="${sentMsgStatus == 'S'}" class="w-6 h-6 text-white" fill="none"
+                                 stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path d="M4.5 12.75l6 6 9-13.5"/>
+                            </svg>
+                            <div th:if="${sentMsgStatus == 'N'}"
+                                 class="w-5 h-5 border-[3px] border-white/30 border-t-white rounded-full animate-spin"></div>
+                            <svg th:if="${sentMsgStatus == null}" class="w-6 h-6 text-slate-400" fill="none"
+                                 stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+                            </svg>
+                            <svg th:if="${sentMsgStatus != null && sentMsgStatus != 'S' && sentMsgStatus != 'N'}"
+                                 class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="3"
+                                 viewBox="0 0 24 24">
+                                <path d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col p-6 rounded-2xl border-2 transition-all duration-300"
+                             th:classappend="${sentMsgStatus == 'S'
+        ? 'bg-emerald-50/50 border-emerald-100 shadow-emerald-50'
+        : 'bg-slate-50 border-transparent'}">
+
+                            <div class="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-start">
+
+                                <!-- LEFT -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base font-black text-slate-800 tracking-tight"
+                                        th:text="#{status.final.title}">
+                                        Kết quả cuối cùng
+                                    </h3>
+
+                                    <div class="mt-4 flex items-center gap-3">
+                                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                            text-[11px] font-black uppercase tracking-[0.05em]"
+                                             th:classappend="${sentMsgStatus == 'S'
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
+                        : (sentMsgStatus == 'N'
+                            ? 'bg-amber-100 text-amber-700'
+                            : (sentMsgStatus == null
+                                ? 'bg-slate-200 text-slate-500'
+                                : 'bg-rose-500 text-white shadow-lg shadow-rose-200'))}">
+
+                    <span th:if="${sentMsgStatus == 'S'}"
+                          class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+
+                                            <span th:text="${sentMsgStatus == 'S'
+                        ? #messages.msg('status.badge.success')
+                        : (sentMsgStatus == 'N'
+                            ? #messages.msg('status.badge.pending')
+                            : (sentMsgStatus == null
+                                ? #messages.msg('status.badge.waiting')
+                                : #messages.msg('status.badge.fail')))}">
+                    </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- RIGHT TIME -->
+                                <div class="flex-shrink-0 lg:text-right">
+            <span th:if="${sentMsgStatus == 'S'}"
+                  class="inline-block text-[11px] font-mono bg-white/80 backdrop-blur-sm
+                         border border-emerald-200 px-3 py-1.5 rounded-lg
+                         text-emerald-700 font-bold shadow-sm whitespace-nowrap"
+                  th:text="${#temporals.format(sentMsgTimeUpdate, 'dd/MM/yyyy HH:mm:ss')}">
+            </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <script th:inline="javascript">
+            const MSG_RESEND_PROCESSING = /*[[#{page.msg.resend.processing}]]*/ 'Đang gửi...';
+            const MSG_RESEND_SUCCESS = /*[[#{page.msg.resend.success}]]*/ 'Đã gửi lại điện thành công';
+            const MSG_RESEND_FAILED = /*[[#{page.msg.resend.failed}]]*/ 'Gửi lại điện thất bại. Vui lòng thử lại.';
+            const MSG_NO_PERMISSION = /*[[#{page.msg.resend.forbidden}]]*/ 'Bạn không có quyền thực hiện chức năng này.';
+
+            const MSG_CONFIRM_TITLE = /*[[#{page.msg.detail.resend.confirm.title}]]*/ 'Xác nhận';
+            const MSG_CONFIRM_TEXT = /*[[#{page.msg.detail.resend.confirm.text}]]*/ 'Bạn có chắc chắn muốn gửi lại điện không?';
+            const MSG_CONFIRM_OK = /*[[#{common.button.confirm}]]*/ 'Xác nhận';
+            const MSG_CONFIRM_CANCEL = /*[[#{common.button.cancel}]]*/ 'Hủy';
+            const PROCESS_STATUS = /*[[${processStatus}]]*/ 'N';
+            const MSG_RESEND_ALREADY_SENT = /*[[#{page.msg.resend.already.sent}]]*/
+                'Điện đã được gửi thành công vào topic thành viên. Bạn vẫn muốn gửi lại không?';
+        </script>
+
+        <script>
+            const resendBtn = document.getElementById('resendBtn');
+            if (resendBtn) {
+                resendBtn.addEventListener('click', async () => {
+                    const id = resendBtn.getAttribute('data-id');
+                    if (!id) return;
+
+                    const confirmResult = await Swal.fire({
+                        title: MSG_CONFIRM_TITLE,
+                        text: PROCESS_STATUS === 'P'
+                            ? MSG_RESEND_ALREADY_SENT
+                            : MSG_CONFIRM_TEXT,
+                        icon: PROCESS_STATUS === 'P' ? 'warning' : 'question',
+                        showCancelButton: true,
+                        confirmButtonText: MSG_CONFIRM_OK,
+                        cancelButtonText: MSG_CONFIRM_CANCEL,
+                        reverseButtons: true,
+                        focusCancel: true
+                    });
+
+                    if (!confirmResult.isConfirmed) return;
+
+
+                    resendBtn.disabled = true;
+                    const originalText = resendBtn.textContent;
+                    resendBtn.textContent = MSG_RESEND_PROCESSING;
+
+                    try {
+                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+                        const headers = {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        };
+
+                        const response = await fetch(`/messages/${id}/resend`, {
+                            method: 'POST',
+                            headers: headers
+                        });
+
+                        if (!response.ok) {
+                            if (response.status === 403) {
+                                let msg = MSG_NO_PERMISSION;
+                                try {
+                                    const data = await response.json();
+                                    if (data?.message) msg = data.message;
+                                } catch (_) {
+                                }
+                                if (window.appToast) window.appToast('error', msg);
+                                else Swal.fire('Error', msg, 'error');
+                                return;
+                            }
+                            throw new Error(MSG_RESEND_FAILED);
+                        }
+
+                        const result = await response.json();
+                        const successMsg = result?.message || MSG_RESEND_SUCCESS;
+                        if (window.appToast) {
+                            window.appToast('success', successMsg);
+                            setTimeout(() => {
+                                window.location.href = '/messages/msg-history';
+                            }, 800);
+                        } else {
+                            Swal.fire({
+                                title: 'Success',
+                                text: successMsg,
+                                icon: 'success'
+                            }).then(() => {
+                                window.location.href = '/messages/msg-history';
+                            });
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+                        if (window.appToast) window.appToast('error', MSG_RESEND_FAILED);
+                        else Swal.fire('Error', MSG_RESEND_FAILED, 'error');
+                    } finally {
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = originalText;
+                    }
+                });
+            }
+        </script>
+
+    </div>
+</div>
+
+</body>
+</html>

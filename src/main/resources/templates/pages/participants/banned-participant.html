@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.participant.title.banned.participant}">Thành viên trực tuyến</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+
+    <div class="mb-10">
+        <h1 class="text-4xl font-extrabold text-transparent-black bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+            th:text="#{page.participant.title.banned.participant}">
+        </h1>
+        <p class="mt-1 text-sm text-gray-500"
+           th:text="#{page.participant.subtitle.banned.participant}">
+            Online members in real-time
+        </p>
+    </div>
+
+    <div class="bg-white/70 border-b px-1 py-6"> <!-- giảm py từ 6 → 3 -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"> <!-- gap 6 → 4, bỏ py-4 -->
+
+            <!-- Search bar cao cấp -->
+            <!-- Search bar nâng cao với text + date -->
+            <form th:action="@{/participants/banned-participant}" method="get"
+                  class="flex flex-col lg:flex-row gap-2 max-w-xl w-full">
+                <!-- Search text -->
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <input type="text" name="search" th:value="${filters.search}"
+                           class="block w-full pl-10 pr-3 py-2 bg-white/80 border focus:border-blue-500 rounded-md text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-cyan-500/20 focus:bg-white transition-all duration-300 text-sm font-medium"
+                           th:placeholder="#{form.search}"/>
+                </div>
+
+                <!-- Submit button -->
+                <button type="submit" hidden="hidden"
+                        class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md text-sm font-medium transition-colors">
+                    Tìm
+                </button>
+            </form>
+
+
+        </div>
+    </div>
+    <div class="flex items-center text-sm px-3 py-1.5">
+        <span th:text="#{global.total.records}"></span>
+
+        <span class="ml-1 font-bold text-cyan-700 text-base py-1"
+              th:text="${bannedParticipantPage.totalElements}"></span>
+    </div>
+    <div class="overflow-x-auto">
+        <div th:replace="~{fragments/common_table :: dynamicTable(
+            headers=${listHeaders},
+            fields=${listFields},
+            dataList=${listData},
+            idField=${listIdField},
+            currentSortField=${currentSortField},
+            currentSortDir=${currentSortDir},
+            pageData=${bannedParticipantPage},
+            filters=${filters},
+            showActions=${false}
+        )}"></div>
+    </div>
+
+    <div class="bg-white/60 px-8 py-5 border-t border-gray-200/50">
+        <div th:replace="~{fragments/common_pagination :: paginationControls(
+            pageData=${bannedParticipantPage},
+            currentSortField=${currentSortField},
+            currentSortDir=${currentSortDir},
+            filters=${filters}
+        )}"></div>
+    </div>
+
+</div>
+
+<th:block th:fragment="rowContent(item, idField)">
+    <td class="px-4 py-2 text-sm text-center">
+        <span th:text="${item.index}">index</span>
+    </td>
+    <td class="px-4 py-2 text-sm text-center"
+        th:text="${item.user != null && item.user.contains(':') ? item.user.split(':')[item.user.split(':').length - 1] : item.user}">
+        User
+    </td>
+
+    <td class="px-4 py-2 text-sm text-center">
+    <span th:text="${
+        item.ttlSeconds != null
+        ? (item.ttlSeconds / 60) + ':' + T(java.lang.String).format('%02d', item.ttlSeconds % 60)
+        : ''
+    }"></span>
+    </td>
+
+
+    <td class="px-4 py-2 text-center" sec:authorize="!hasRole('MONITOR')">
+        <button type="button"
+                class="kick-button px-3 py-1.5 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                th:data-client="${item.user}" th:text="#{global.button.unlock}">
+
+        </button>
+    </td>
+</th:block>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/common_table.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('.kick-button');
+
+                if (btn) {
+                    e.preventDefault();
+                    const clientId = btn.getAttribute('data-client');
+                    if (!clientId) return;
+
+                    Swal.fire({
+                        title: /*[[#{swal.banned.title}]]*/ 'Kick thành viên này?',
+                        text: /*[[#{swal.banned.text}]]*/ 'Hành động này sẽ ngắt kết nối hiện tại!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0e7490', // cyan-500
+                        cancelButtonColor: '#6b7280',  // gray-500
+                        confirmButtonText: /*[[#{swal.kick.confirm}]]*/ 'Đồng ý',
+                        cancelButtonText: /*[[#{swal.kick.cancel}]]*/ 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+
+                            fetch('/participants/banned-participant/kick', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                },
+                                body: JSON.stringify({client: clientId})
+                            })
+                                .then(async resp => {
+                                    if (resp.ok) {
+                                        Swal.fire(
+                                            /*[[#{swal.kick.success.title}]]*/ 'Thành công!',
+                                            /*[[#{swal.banned.success.text}]]*/ 'Đã kick thành viên.',
+                                            'success'
+                                        ).then(() => location.reload());
+                                    } else {
+                                        const errorText = await resp.text();
+                                        Swal.fire(
+                                            /*[[#{swal.kick.error.title}]]*/ 'Lỗi!',
+                                            errorText,
+                                            'error'
+                                        );
+                                    }
+                                })
+                                .catch(() => {
+                                    Swal.fire(
+                                        /*[[#{swal.kick.error.title}]]*/ 'Lỗi!',
+                                        /*[[#{swal.kick.error.conn}]]*/ 'Lỗi kết nối! Vui lòng kiểm tra lại server.',
+                                        'error'
+                                    );
+                                });
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('span.datetime').forEach(function (el) {
+                let text = el.textContent.trim();
+                if (text) {
+                    // Giả sử text dạng "2025-12-26T15:30:12"
+                    let dt = new Date(text);
+                    if (!isNaN(dt.getTime())) {
+                        const day = String(dt.getDate()).padStart(2, '0');
+                        const month = String(dt.getMonth() + 1).padStart(2, '0');
+                        const year = dt.getFullYear();
+                        const hours = String(dt.getHours()).padStart(2, '0');
+                        const mins = String(dt.getMinutes()).padStart(2, '0');
+                        const secs = String(dt.getSeconds()).padStart(2, '0');
+                        el.textContent = `${day}/${month}/${year} ${hours}:${mins}:${secs}`;
+                    }
+                }
+            });
+        });
+    </script>
+
+</th:block>
+
+</body>
+</html>

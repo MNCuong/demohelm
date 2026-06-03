@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.acknack.title}"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+
+<div layout:fragment="content" >
+    <!-- Header sang trọng -->
+    <div class="mb-10">
+        <h1 class="text-4xl font-extrabold text-transparent-black bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+            th:text="#{page.acknack.title}">
+
+        </h1>
+        <p
+                class="mt-2 text-sm text-gray-500"
+                th:text="#{page.acknack.subtitle}">
+        </p>
+    </div>
+    <div th:replace="~{fragments/common-status-cards :: render(statusCounts=${statusCounts})}"></div>
+    <!-- Card chính với hiệu ứng kính mờ (glassmorphism) -->
+        <!-- Toolbar -->
+        <div class=" border-b border-gray-200/50 px-1 py-4">
+            <div th:replace="~{fragments/common-filter :: render(
+                actionUrl='/messages/msg-acknak',
+                configs=${filterConfigsAckNak},
+                params=${filters}
+            )}"></div>
+            <div class="flex items-center">
+                <span th:text="#{global.total.records}"></span>
+                <span class="ml-1 font-bold text-cyan-700 text-base py-1"
+                      th:text="${ackNakPage.totalElements}"></span>
+            </div>
+        </div>
+
+        <!-- Bảng dữ liệu -->
+        <div class="overflow-x-auto">
+            <div th:replace="~{fragments/common_table :: dynamicTable(
+                headers=${listHeaders},
+                fields=${listFields},
+                dataList=${listData},
+                idField=${listIdField},
+                currentSortField=${currentSortField},
+                currentSortDir=${currentSortDir},
+                pageData=${ackNakPage},
+                filters=${filters},
+                showActions=${false}
+
+            )}"></div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white/60 px-8 py-5 border-t border-gray-200/50">
+            <div th:replace="~{fragments/common_pagination :: paginationControls(
+                pageData=${ackNakPage},
+                currentSortField=${currentSortField},
+                currentSortDir=${currentSortDir},
+                filters=${filters}
+            )}"></div>
+        </div>
+    </div>
+<!-- Row nội dung -->
+<th:block th:fragment="rowContent(item, idField)">
+    <!-- SEQID (link, bỏ underline) -->
+    <td class="px-3 py-2 text-center">
+        <a th:href="${item.seqid != null} ? @{/messages/msg-acknak-detail/{autoid}(autoid=${item.autoid})} : '#'"
+           th:text="${item.seqid != null} ? ${item.seqid} : '-'"
+           th:classappend="${item.seqid == null} ? ' pointer-events-none text-gray-400' : ''"
+           class="inline-block px-4 py-1.5 text-sm font-semibold text-cyan-600 hover:text-cyan-800 no-underline">
+        </a>
+
+    </td>
+
+
+    <td class="px-3 py-2 text-gray-800 font-medium text-center"
+        th:text="${item.shortname}">
+    </td>
+
+    <!-- STATUS -->
+    <td class="px-3 py-2 text-gray-800 font-medium break-words max-w-[250px] text-center"
+        th:text="#{|acknak.status.${item.status}|}"
+        th:title="#{|acknak.status.${item.status}|}">
+    </td>
+
+    <!-- ACTION TIME -->
+    <td class="px-3 py-2 text-gray-800 font-medium text-center"
+        th:text="${#temporals.format(item.actiontime, 'dd/MM/yyyy HH:mm:ss')}">
+    </td>
+    <!-- update TIME -->
+    <td class="px-3 py-2 text-gray-800 font-medium text-center"
+        th:text="${#temporals.format(item.updatetime, 'dd/MM/yyyy HH:mm:ss')}">
+    </td>
+
+</th:block>
+
+
+<!-- Scripts -->
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/common_table.js}"></script>
+</th:block>
+
+<script th:if="${errorMessage != null}">
+    alert([[${errorMessage}]]);
+</script>
+
+
+</body>

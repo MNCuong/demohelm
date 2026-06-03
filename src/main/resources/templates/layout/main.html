@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:fragment="title">Log Anomaly Detector</title>
+    <link rel="icon" type="image/png" th:href="@{/images/favicon.png}">
+    <link href="/css/output.css" rel="stylesheet" th:href="@{/css/output.css}">
+    <script defer th:src="@{/js/alpine.min.js}"></script>
+    <script defer th:src="@{/js/sweetalert2@11.js}"></script>
+    <script src="/js/tailwind.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans" th:data-error-message="${errorMessage}" th:data-success-message="${successMessage}">
+<div class="flex h-screen">
+    <div th:replace="~{fragments/sidebar :: main-sidebar}"></div>
+    <main class="flex-1 p-6 lg:p-8 overflow-y-auto" layout:fragment="content"></main>
+</div>
+
+<script th:src="@{/js/toad-popup.js}"></script>
+<script th:src="@{/js/common-modal-handler.js}"></script>
+
+<div th:replace="~{fragments/common-modal :: modal-shell}"></div>
+<th:block layout:fragment="scripts"></th:block>
+<div class="absolute top-2 right-6 z-50 flex items-center p-1 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+    <a href="javascript:void(0)"
+       onclick="changeLanguage('vi')"
+       class="px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer"
+       th:classappend="${#locale.language == 'vi' ? 'bg-cyan-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}">
+        VN
+    </a>
+
+    <a href="javascript:void(0)"
+       onclick="changeLanguage('en')"
+       class="px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-200 ml-1 cursor-pointer"
+       th:classappend="${#locale.language == 'en' ? 'bg-cyan-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}">
+        EN
+    </a>
+</div>
+
+<script>
+    function changeLanguage(lang) {
+        // 1. Lấy URL hiện tại của trình duyệt (bao gồm cả query string ?a=b&c=d...)
+        const currentUrl = new URL(window.location.href);
+
+        // 2. Cập nhật hoặc Thêm tham số 'lang' mới vào
+        currentUrl.searchParams.set('lang', lang);
+
+        // 3. Chuyển hướng trang đến URL mới (đã có lang và giữ nguyên các params cũ)
+        window.location.href = currentUrl.toString();
+    }
+</script>
+</body>
+</html>

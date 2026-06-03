@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="modal-shell"
+     id="commonModal"
+     class="fixed inset-0 bg-black/25 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+
+    <div id="commonModalPanel" class="bg-white rounded-2xl shadow-2xl w-full max-w-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+
+        <div class="border-b border-gray-100 px-6 py-4 flex justify-between items-center rounded-t-2xl bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h3 id="commonModalTitle" class="text-xl font-semibold text-gray-800">
+                Loading...
+            </h3>
+
+            <button type="button" id="commonModalCloseBtn" class="p-1 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div id="commonModalContent" class="p-6 min-h-[150px]">
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

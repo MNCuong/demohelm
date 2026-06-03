@@ -1,0 +1,168 @@
+<div th:fragment="addUserForm" class="flex flex-col h-full">
+
+    <form th:action="@{/users/save}" method="post" id="modalForm" class="flex flex-col h-full">
+
+        <!-- Nội dung chính – đã rút gọn chiều cao -->
+        <div class="flex-1 overflow-y-auto">
+
+            <!-- FORM 1 CỘT – FULL WIDTH GỌN GÀNG -->
+            <div class="space-y-7 max-w-3xl mx-auto">
+
+                <!-- USERNAME -->
+                <div>
+                    <label th:text="#{page.users.form.label.username}"
+                           class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                        Tên đăng nhập <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="username" required
+                           class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                      focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium"
+                           placeholder="Nhập tên đăng nhập">
+                </div>
+
+                <!-- PASSWORD -->
+                <div>
+                    <label th:text="#{page.users.form.label.password}"
+                           class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                        Mật khẩu <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password" name="password" required
+                           class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                      focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium"
+                           placeholder="••••••••">
+                </div>
+
+                <!-- EMAIL -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" name="email" required
+                           class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                      focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium"
+                           placeholder="user@example.com">
+                </div>
+
+                <!-- ROLE -->
+                <div>
+                    <label th:text="#{page.users.form.label.role}"
+                           class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                        Vai trò
+                    </label>
+                    <select name="role"
+                            class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900
+                       focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium cursor-pointer">
+                        <option value="MONITOR" th:text="#{page.participant.status.monitor}">Giám sát</option>
+                        <option value="OPERATOR" th:text="#{page.users.form.option.role.operator}">Vận hành</option>
+                        <option value="ADMIN" selected th:text="#{page.users.form.option.role.admin}">Quản trị viên
+                        </option>
+                    </select>
+                </div>
+
+                <!-- NOTES -->
+                <div>
+                    <label th:text="#{page.users.form.label.notes}"
+                           class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                        Ghi chú
+                    </label>
+                    <textarea name="notes" rows="4" maxlength="128"
+                              class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                         focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium resize-none"
+                              placeholder="Ghi chú thêm (không bắt buộc)..."></textarea>
+                </div>
+
+            </div>
+
+            <div class="border-t border-gray-200/70 bg-white/90 backdrop-blur-xl px-6 py-5">
+                <div class="flex justify-end gap-3">
+                    <!-- Nút Hủy -->
+                    <button type="button" id="commonModalCloseBtn"
+                            class="modal-cancel-btn px-7 py-3 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md border border-gray-300
+                       hover:bg-gray-300 active:bg-gray-400 transition-all duration-150 shadow-md flex items-center gap-2">
+                        <!-- SVG icon Hủy -->
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span th:text="#{global.button.cancel}"></span>
+                    </button>
+
+                    <!-- Nút Cập nhật -->
+                    <button type="submit"
+                            class="px-9 py-3 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-teal-500
+                       hover:from-cyan-600 hover:to-teal-600 active:from-cyan-700 active:to-teal-700
+                       rounded-md shadow-lg hover:shadow-xl active:shadow-2xl
+                       transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2.5"
+                            style="background-color: rgb(8 145 178 / var(--tw-bg-opacity, 1))">
+                        <!-- SVG icon Cập nhật -->
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                  d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span th:text="#{global.button.add}"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+<script>
+    const form = document.getElementById('modalForm');
+
+    form.addEventListener('submit', function (e) {
+        const username = form.username.value.trim();
+        const password = form.password.value.trim();
+        const email = form.email.value.trim();
+        let valid = true;
+        let messages = [];
+
+        if (!username) {
+            valid = false;
+            messages.push("Tên đăng nhập không được để trống.");
+        } else if (username.length < 4 || username.length > 20) {
+            valid = false;
+            messages.push("Tên đăng nhập phải từ 4 đến 20 ký tự.");
+        }
+
+        if (!password) {
+            valid = false;
+            messages.push("Mật khẩu không được để trống.");
+        } else {
+            if (password.length < 12) {
+                valid = false;
+                messages.push("Mật khẩu phải ít nhất 12 ký tự.");
+            }
+            if (!/[A-Z]/.test(password)) {
+                valid = false;
+                messages.push("Mật khẩu phải chứa ít nhất 1 chữ hoa (A–Z).");
+            }
+            if (!/[a-z]/.test(password)) {
+                valid = false;
+                messages.push("Mật khẩu phải chứa ít nhất 1 chữ thường (a–z).");
+            }
+            if (!/\d/.test(password)) {
+                valid = false;
+                messages.push("Mật khẩu phải chứa ít nhất 1 chữ số (0–9).");
+            }
+            if (!/[\W_]/.test(password)) {
+                valid = false;
+                messages.push("Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt.");
+            }
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            valid = false;
+            messages.push("Email không được để trống.");
+        } else if (!emailRegex.test(email)) {
+            valid = false;
+            messages.push("Email không hợp lệ.");
+        }
+
+        if (!valid) {
+            e.preventDefault();
+            alert(messages.join("\n"));
+        }
+    });
+</script>

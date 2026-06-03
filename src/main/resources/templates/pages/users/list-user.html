@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.users.title}">Quản lý người dùng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="/js/tailwind.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00d4d4',
+                        'primary-hover': '#00b8b8',
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(0, 212, 212, 0.12)',
+                        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .action-menu-fixed {
+            position: fixed !important;
+            z-index: 9999 !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+
+<div layout:fragment="content" >
+    <div class="mb-10">
+        <h1 class="text-4xl font-extrabold text-transparent-black bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+            th:text="#{page.users.title}">
+        </h1>
+        <p class="mt-2 text-sm text-gray-500" th:text="#{page.users.subtitle}"></p>
+    </div>
+
+    <div class="glassmorphism rounded-md shadow-card overflow-hidden border border-white/20">
+        <div class="bg-white/70 border-b px-1 py-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <form th:action="@{/users}" method="get" class="relative max-w-xl w-full">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           class="block w-full pl-10 pr-3 py-2 bg-white/80 border focus:border-blue-500 rounded-md text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-cyan-500/20 focus:bg-white transition-all duration-300 text-sm font-medium"
+                           th:placeholder="#{page.users.search.placeholder}"/>
+                </form>
+                <button type="button" class="open-modal-btn inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-800 text-white font-bold px-5 py-2.5 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
+                        data-modal-url="/users/add-user" th:attr="data-modal-title=#{page.users.button.add_user}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span th:text="#{page.users.button.add_user}"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="flex items-center text-sm px-3 py-1.5">
+        <span th:text="#{global.total.records}"></span>
+
+        <span class="ml-1 font-bold text-cyan-700 text-base py-1"
+              th:text="${userPage.totalElements}"></span>
+    </div>
+
+    <div class="overflow-x-auto users-table-wrapper !overflow-visible">
+            <div th:replace="~{fragments/common_table :: dynamicTable(
+                headers=${listHeaders}, fields=${listFields}, dataList=${listData}, idField=${listIdField},
+                currentSortField=${currentSortField}, currentSortDir=${currentSortDir}, pageData=${userPage}, filters=${filters}
+            )}"></div>
+        </div>
+
+        <div class="bg-white px-8 py-5 border-t ">
+            <div th:replace="~{fragments/common_pagination :: paginationControls(
+                pageData=${userPage}, currentSortField=${currentSortField}, currentSortDir=${currentSortDir}, filters=${filters}
+            )}"></div>
+        </div>
+    </div>
+</div>
+
+<th:block th:fragment="rowContent(item, idField)">
+    <td class="px-2 py-2">
+        <div class="flex items-end space-x-3 ml-16">
+            <div class="relative flex-shrink-0 ">
+                <img th:src="@{/images/profile-avatar.png}" alt="Avatar" class="w-10 h-10 rounded-full ring-4 ring-white shadow-xl object-cover border-2 border-cyan-200">
+                <span class="absolute bottom-0 right-0 w-5 h-5 bg-emerald-400 border-3 border-white rounded-full"></span>
+            </div>
+            <div class="flex flex-col min-w-0">
+                <div class="text-sm font-bold text-gray-900 truncate" th:text="${item.username}"></div>
+                <div class="text-sm text-gray-500 font-medium truncate" th:text="${item.email}"></div>
+            </div>
+        </div>
+    </td>
+    <td class="px-6 py-4 text-center">
+        <span th:switch="${item.role}">
+            <span th:case="'ADMIN'" class="inline-flex px-4 py-2 rounded-full text-sm font-semibold uppercase bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200" th:text="#{role.admin}"></span>
+            <span th:case="'MONITOR'" class="inline-flex px-4 py-2 rounded-full text-sm font-semibold uppercase bg-gradient-to-r from-green-100 to-pink-100 text-green-800 border border-green-200" th:text="#{role.monitor}"></span>
+            <span th:case="'OPERATOR'" class="inline-flex px-4 py-2 rounded-full text-sm font-semibold uppercase bg-gradient-to-r from-yellow-100 to-pink-100 text-yellow-800 border border-yellow-200" th:text="#{role.operator}"></span>
+        </span>
+    </td>
+    <td class="px-2 py-2 text-center">
+        <span th:id="'status-'+${item.username}" th:text="${item.enabled} ? #{page.users.status.active} : #{page.users.status.inactive}"
+              th:classappend="${item.enabled} ? 'bg-cyan-600 text-white' : 'bg-gray-300 text-gray-800'" class="status-badge inline-flex px-5 py-2 rounded-full text-sm font-semibold"></span>
+    </td>
+
+    <td class="px-6 py-4 text-center relative !overflow-visible">
+        <button type="button" class="p-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
+                th:attr="data-id=${item[idField]}" onclick="toggleActionMenu(this)">
+            <svg class="w-6 h-6 text-gray-500 group-hover:text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+            </svg>
+        </button>
+
+        <div th:id="'menu-panel-' + ${item[idField]}"
+             class="action-menu-fixed hidden z-50 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200/80 overflow-hidden transition-all duration-200 origin-top">
+            <div class="py-2">
+                <span class="block px-5 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider" th:text="#{global.label.actions}"></span>
+                <button type="button" class="open-modal-btn w-full px-5 py-3 text-left text-gray-800 hover:bg-cyan-50 flex items-center gap-4 transition-all font-medium"
+                        th:data-modal-title="#{page.users.button.edit_user}" th:data-modal-url="@{/users/edit/{id}(id=${item[idField]})}">
+                    <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span th:text="#{global.button.edit}">Edit</span>
+                </button>
+                <button type="button" class="w-full px-5 py-3 text-left text-red-700 hover:bg-red-50 flex items-center gap-4 transition-all font-medium"
+                        th:attr="data-id=${item[idField]}, data-name=${item.username}" onclick="deleteUser(this)">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v2M4 7h16"/></svg>
+                    <span>Xóa</span>
+                </button>
+                <button type="button" class="w-full px-5 py-3 text-left flex items-center gap-3 transition font-medium"
+                        th:attr="data-username=${item.username}, data-enabled=${item.enabled}" onclick="toggleUserStatus(this)">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/></svg>
+                    <span class="status-text" th:text="${item.enabled} ? #{page.users.form.button.disable} : #{page.users.form.button.enable}"></span>
+                </button>
+            </div>
+        </div>
+    </td>
+</th:block>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/common_table.js}"></script>
+    <script>
+        // SỬA ĐỔI: Hàm toggle menu định vị Fixed thông minh
+        function toggleActionMenu(button) {
+            const itemId = button.getAttribute('data-id');
+            const menu = document.getElementById('menu-panel-' + itemId);
+            const isHidden = menu.classList.contains('hidden');
+
+            closeAllMenus();
+
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                menu.style.visibility = 'hidden';
+
+                const rect = button.getBoundingClientRect();
+                const menuHeight = menu.offsetHeight;
+                const menuWidth = menu.offsetWidth;
+
+                let top = rect.bottom + 8;
+                let left = rect.right - menuWidth;
+
+                // Chống tràn dưới màn hình
+                if (top + menuHeight > window.innerHeight) {
+                    top = rect.top - menuHeight - 8;
+                }
+
+                menu.style.visibility = 'visible';
+                menu.style.top = top + 'px';
+                menu.style.left = left + 'px';
+
+                const closeHandler = (e) => {
+                    if (!menu.contains(e.target) && !button.contains(e.target)) {
+                        menu.classList.add('hidden');
+                        document.removeEventListener('click', closeHandler);
+                        window.removeEventListener('scroll', closeHandler, true);
+                    }
+                };
+                setTimeout(() => {
+                    document.addEventListener('click', closeHandler);
+                    window.addEventListener('scroll', closeHandler, true);
+                }, 10);
+            }
+        }
+
+        function closeAllMenus() {
+            document.querySelectorAll('.action-menu-fixed').forEach(m => m.classList.add('hidden'));
+        }
+
+        // Tự động đóng menu khi mở bất kỳ modal nào
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.open-modal-btn')) {
+                closeAllMenus();
+            }
+        });
+    </script>
+
+    <script th:inline="javascript">
+        const i18nUser = {
+            statusActive: /*[[#{page.users.status.active}]]*/ 'Hoạt động',
+            statusInactive: /*[[#{page.users.status.inactive}]]*/ 'Không hoạt động',
+            enable: /*[[#{page.users.form.button.enable}]]*/ 'Kích hoạt',
+            disable: /*[[#{page.users.form.button.disable}]]*/ 'Ngừng kích hoạt',
+            enableConfirm: /*[[#{page.users.enable.confirm}]]*/ 'Bạn muốn kích hoạt tài khoản này?',
+            disableConfirm: /*[[#{page.users.disable.confirm}]]*/ 'Bạn muốn ngưng kích hoạt tài khoản này?',
+            enableWarn: /*[[#{page.users.enable.warn}]]*/ 'Tài khoản sẽ được kích hoạt lại.',
+            disableWarn: /*[[#{page.users.disable.warn}]]*/ 'Tài khoản này sẽ bị khóa và không thể đăng nhập.',
+            enableSuccess: /*[[#{page.users.enable.success}]]*/ 'Tài khoản đã được kích hoạt!',
+            disableSuccess: /*[[#{page.users.disable.success}]]*/ 'Tài khoản đã ngừng kích hoạt!',
+            cancel: /*[[#{global.confirm.delete.cancel}]]*/ 'Hủy',
+            success: /*[[#{global.action.success}]]*/ 'Thành công',
+            error: /*[[#{page.users.action.error}]]*/ 'Không thể cập nhật trạng thái!'
+        };
+    </script>
+
+    <script>
+        function toggleUserStatus(btn) {
+            const username = btn.getAttribute("data-username");
+            let isEnabled = btn.getAttribute("data-enabled") === "true";
+
+            Swal.fire({
+                title: isEnabled ? i18nUser.disable : i18nUser.enable,
+                text: isEnabled ? i18nUser.disableWarn : i18nUser.enableWarn,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: '#0e7490',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: isEnabled ? i18nUser.disable : i18nUser.enable,
+                cancelButtonText: i18nUser.cancel
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/disable/${username}`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content') }
+                    }).then(res => {
+                        if (!res.ok) throw new Error("API failed");
+                        isEnabled = !isEnabled;
+                        btn.setAttribute("data-enabled", isEnabled);
+                        const badge = document.getElementById("status-" + username);
+                        badge.textContent = isEnabled ? i18nUser.statusActive : i18nUser.statusInactive;
+                        badge.classList.toggle("bg-cyan-600", isEnabled);
+                        badge.classList.toggle("text-white", isEnabled);
+                        badge.classList.toggle("bg-gray-300", !isEnabled);
+                        badge.classList.toggle("text-gray-800", !isEnabled);
+                        const text = btn.querySelector(".status-text");
+                        text.textContent = isEnabled ? i18nUser.disable : i18nUser.enable;
+                        Swal.fire({ icon: "success", title: i18nUser.success, text: isEnabled ? i18nUser.enableSuccess : i18nUser.disableSuccess, timer: 1500, showConfirmButton: false });
+                    }).catch(e => Swal.fire("Error", i18nUser.error, "error"));
+                }
+            });
+        }
+    </script>
+
+    <script th:inline="javascript">
+        const i18nDelete = {
+            title: /*[[#{page.users.delete.title}]]*/ 'Xóa tài khoản?',
+            confirm: /*[[#{page.users.delete.confirm}]]*/ 'Bạn chắc chắn muốn xóa người dùng "{0}"?',
+            success: /*[[#{page.users.delete.success}]]*/ 'Tài khoản {0} đã được xóa.',
+            error: /*[[#{page.users.delete.error}]]*/ 'Không thể xóa tài khoản.',
+            confirmButton: /*[[#{page.users.delete.confirmButton}]]*/ 'Xóa',
+            cancelButton: /*[[#{page.users.delete.cancelButton}]]*/ 'Hủy'
+        };
+    </script>
+
+    <script>
+        function deleteUser(btn) {
+            const username = btn.getAttribute("data-name");
+
+            Swal.fire({
+                title: i18nDelete.title,
+                text: i18nDelete.confirm.replace("{0}", username),
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: i18nDelete.confirmButton,
+                cancelButtonText: i18nDelete.cancelButton,
+                confirmButtonColor: '#0e7490', // cyan-500
+                cancelButtonColor: '#6b7280'   // gray-500
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/delete/${username}`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                        }
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Delete failed");
+
+                            Swal.fire({
+                                icon: "success",
+                                title: i18nDelete.success.replace("{0}", username),
+                                timer: 1000,
+                                showConfirmButton: false
+                            });
+
+                            setTimeout(() => location.reload(), 1000);
+                        })
+                        .catch(e => {
+                            Swal.fire("Lỗi!", i18nDelete.error, "error");
+                        });
+                }
+            });
+        }
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = document.querySelector('.users-table-wrapper table');
+            if (table) {
+                const ths = table.querySelectorAll('th');
+                const tds = table.querySelectorAll('td');
+
+
+                // Chia độ rộng cột
+                ths[0].style.width = '30%'; // Username
+                ths[1].style.width = '25%'; // Role
+                ths[2].style.width = '25%'; // Status
+                ths[3].style.width = '20%'; // Action
+
+                tds.forEach((td, idx) => {
+                    const col = idx % 4;
+                    if (col === 0) td.style.width = '40%';
+                    else if (col === 1 || col === 2 || col === 3) td.style.width = '20%';
+                });
+            }
+        });
+    </script>
+
+</th:block>
+<script th:if="${errorMessage != null}">
+    alert([[${errorMessage}]]);
+</script>
+
+</body>
+</html>

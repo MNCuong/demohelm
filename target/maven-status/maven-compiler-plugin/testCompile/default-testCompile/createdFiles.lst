@@ -1,0 +1,4 @@
+com\example\web_monitor\servicetest\UserServiceTest.class
+com\example\web_monitor\servicetest\ActionLogServiceTest.class
+com\example\web_monitor\WebMonitorApplicationTests.class
+com\example\web_monitor\aspecttest\ActionLogAspectTest.class

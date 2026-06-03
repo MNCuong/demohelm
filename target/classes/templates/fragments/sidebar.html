@@ -1,0 +1,59 @@
+<aside th:fragment="main-sidebar"
+       x-data="{
+           expanded: JSON.parse(localStorage.getItem('sidebar-expanded') ?? 'true')
+       }"
+       x-init="$watch('expanded', value => localStorage.setItem('sidebar-expanded', JSON.stringify(value)))"
+       x-cloak
+       class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300 relative h-screen">
+
+<!-- Logo -->
+    <div class="flex items-center justify-center h-16">
+        <a th:href="@{/}" title="Home">
+            <img class="h-8 w-auto" th:src="@{/images/logo.png}" alt="Logo">
+        </a>
+    </div>
+
+    <div class="border-b border-gray-200"></div>
+
+    <!-- Menu -->
+    <div th:replace="~{fragments/menu :: main-nav(expanded=${expanded})}" class="mt-2 flex-1">
+        <!-- Trong fragment main-nav, bạn sẽ check expanded để show tên menu -->
+    </div>
+
+    <!-- Profile + Toggle -->
+    <div class="relative flex items-center p-4">
+        <!-- Avatar Profile -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="block relative">
+                <img class="w-8 h-8 rounded-full" th:src="@{/images/profile-avatar.png}" alt="User profile">
+                <span class="absolute bottom-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-green-400"></span>
+            </button>
+                       <!-- Dropdown Profile -->
+            <div x-show="open" @click.away="open = false" x-transition x-cloak
+                 class="absolute left-full ml-2 bottom-0 mb-2 w-56 py-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                <div class="px-4 py-3 border-b border-gray-100">
+                    <p class="text-sm font-semibold text-gray-800" th:text="${currentUser != null ? currentUser.username : 'Guest'}">VSDC Admin</p>
+                    <p class="text-xs text-gray-500 truncate" th:text="${currentUser != null ? currentUser.email : ''}">admin@vsdc.com.vn</p>
+                </div>
+                <a href="/profile" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <div th:replace="~{fragments/icons :: icon-profile(customClasses='mr-3 h-5 w-5 text-gray-400')}"></div>
+                    <span th:text="#{global.button.profile}">Profile</span>
+                </a>
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+                <a href="javascript:void(0)"
+                   onclick="document.getElementById('logoutForm').submit();"
+                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <div th:replace="~{fragments/icons :: icon-logout(customClasses='mr-3 h-5 w-5 text-gray-400')}"></div>
+                    <span th:text="#{global.button.logout}">Profile</span>
+                </a>
+
+            </div>
+
+
+            <!-- Toggle Sidebar Button (absolute bên phải avatar) -->
+
+        </div>
+    </div>
+
+
+</aside>

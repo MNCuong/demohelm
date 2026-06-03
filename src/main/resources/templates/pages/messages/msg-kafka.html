@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title layout:fragment="title" th:text="#{page.kafka.title}"></title>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+
+<div layout:fragment="content">
+
+    <!-- TITLE -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-extrabold bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600"
+            th:text="#{page.kafka.title}"></h1>
+        <p
+                class="mt-2 text-sm text-gray-500"
+                th:text="#{page.kafka.subtitle}">
+        </p>
+    </div>
+
+    <div class="glassmorphism rounded-lg shadow-card border border-white/20 bg-white/70">
+
+        <div class="glassmorphism rounded-lg shadow-card border border-white/20 bg-white/70">
+
+            <!-- Header -->
+            <div class="p-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5 text-cyan-600"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+                </svg>
+
+                <h2 class="text-base font-semibold text-gray-700"
+                    th:text="#{filter.header.title}">
+                    Bộ lọc tìm kiếm
+                </h2>
+            </div>
+
+            <!-- Divider -->
+            <hr class="border-gray-200 mx-4">
+
+            <form action="/messages/msg-kafka" method="get"
+                  class="w-full bg-white p-4
+             flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
+
+                <!-- Key / Offset -->
+                <div class="flex flex-col w-full md:w-[320px]">
+                    <label for="searchKey"
+                           class="mb-1 text-sm font-medium text-gray-600"
+                           th:text="#{page.kafka.search.placeholder}">
+                        Key / Offset
+                    </label>
+                    <input type="text"
+                           id="searchKey"
+                           name="key"
+                           th:value="${key}"
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm
+                      shadow-sm
+                      focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30"/>
+                </div>
+
+                <!-- Date / Time -->
+                <div class="flex flex-col w-full md:w-[180px] md:shrink-0">
+                    <label for="dateTimeFilter"
+                           class="mb-1 text-sm font-medium text-gray-600"
+                           th:text="#{page.kafka.search.datetime}">
+                        Date / Time
+                    </label>
+                    <input type="datetime-local"
+                           id="dateTimeFilter"
+                           name="dateTime"
+                           th:value="${dateTime}"
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm
+                      shadow-sm
+                      focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30"/>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-2
+               rounded-lg px-6 py-2.5 text-sm font-semibold
+               text-white bg-cyan-600 hover:bg-cyan-700
+               focus:outline-none focus:ring-2 focus:ring-cyan-500/40
+               shadow-md transition">
+                    <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+                    </svg>
+                    <span th:text="#{global.button.search}"></span>
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto max-h-[62vh] shadow-sm rounded-md border border-gray-50 bg-white">
+            <table class="min-w-full text-sm text-gray-700 font-sans table-fixed">
+                <!-- Table Head -->
+                <thead class="text-xs text-gray-500 uppercase bg-gray-50 sticky top-0 z-10">
+                <tr>
+                    <th class="px-4 py-3 font-medium border-l border-transparent text-center"
+                        th:text="#{page.kafka.table.header.offset}">Offset
+                    </th>
+                    <th class="px-4 py-3 font-medium border-l border-transparent text-center"
+                        th:text="#{page.kafka.table.header.key}">Key
+                    </th>
+                    <th class="px-4 py-3 font-medium border-l border-transparent text-center"
+                        th:text="#{page.kafka.table.header.value}">Message
+                    </th>
+                    <th class="px-4 py-3 font-medium border-l border-transparent text-center"
+                        th:text="#{page.kafka.table.header.timestamp}">Time
+                    </th>
+                </tr>
+                </thead>
+
+                <!-- Table Body -->
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="msg : ${listData}" class="bg-white hover:bg-blue-50/70 transition duration-150">
+                    <!-- Offset -->
+                    <td class="px-4 py-2 border-l border-transparent text-center text-gray-700 font-medium"
+                        th:text="${msg.offset}"></td>
+
+                    <td class="px-4 py-2 border-l border-transparent text-center">
+                        <a th:href="@{/messages/msg-kafka-detail/{key}(key=${msg.key})}"
+                           class="text-cyan-600 hover:underline truncate inline-block max-w-xs font-semibold text-center"
+                           th:text="${msg.key}"></a>
+                    </td>
+
+                    <td class="px-4 py-2 border-l border-transparent text-center text-gray-800">
+                        <span class="inline-block truncate max-w-md" th:text="${msg.value}"></span>
+                    </td>
+
+                    <!-- Time -->
+                    <td class="px-4 py-2 border-l border-transparent text-center text-gray-500 text-sm"
+                        th:text="${#temporals.format(msg.timestamp, 'dd/MM/yyyy HH:mm:ss')}">
+                    </td>
+
+                </tr>
+
+                <!-- Khi danh sách rỗng -->
+                <tr th:if="${#lists.isEmpty(listData)}">
+                    <td th:colspan="4" class="text-center py-8 text-gray-600 italic"
+                        th:text="#{global.label.no_matching_data-found}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- PAGINATION -->
+        <div class="mt-6 flex justify-end space-x-3">
+
+            <!-- Previous -->
+            <a th:if="${hasPrevious ?: false}"
+               th:href="@{/messages/msg-kafka(direction='prev', offset=${currentOffset}, key=${key}, dateTime=${dateTime})}"
+               class="flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-md
+              hover:bg-gray-300 shadow-md transition-all duration-150 font-medium">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 19l-7-7 7-7"/>
+                </svg>
+                Previous
+            </a>
+
+            <!-- Next -->
+            <a th:if="${hasNext ?: false}"
+               th:href="@{/messages/msg-kafka(direction='next', offset=${currentOffset}, key=${key}, dateTime=${dateTime})}"
+               class="flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-md
+              hover:bg-gray-300 shadow-md transition-all duration-150 font-medium">
+                Next
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+
+        </div>
+
+
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Hồ sơ cá nhân</title>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 min-h-screen">
+<div layout:fragment="content">
+    <div class="mb-10">
+        <h1 class="text-4xl font-extrabold text-transparent-black bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-600">
+            Hồ sơ của tôi
+        </h1>
+        <p class="mt-2 text-gray-500">Quản lý thông tin tài khoản cá nhân</p>
+    </div>
+
+    <div class="glassmorphism rounded-3xl shadow-card overflow-hidden border border-white/20">
+
+        <!-- Card -->
+        <form th:action="@{/profile/update}" method="post" th:object="${user}"
+              class="bg-white rounded-xl overflow-hidden shadow-xl">
+
+            <!-- Avatar & Info -->
+            <div class="bg-gradient-to-r from-blue-50 to-white px-6 py-6 sm:flex sm:items-center border-b border-gray-200">
+                <div class="relative flex-shrink-0 mx-auto sm:mx-0">
+                    <img class="h-24 w-24 rounded-full ring-4 ring-white shadow-md object-cover"
+                         th:src="@{/images/profile-avatar.png}" alt="Avatar">
+                </div>
+                <div class="mt-4 sm:mt-0 sm:ml-6 text-center sm:text-left">
+                    <h2 class="text-xl font-semibold text-gray-900" th:text="${user.username}">Username</h2>
+                    <p class="text-gray-500 mt-1" th:text="${user.email}">email@example.com</p>
+                </div>
+            </div>
+
+            <!-- Info Fields -->
+            <div class="px-6 py-6 space-y-4">
+                <!-- Tên đăng nhập chỉ đọc -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                    <label class="text-gray-600 font-medium">Tên đăng nhập</label>
+                    <input type="text" th:field="*{username}" readonly
+                           class="bg-gray-100 text-gray-500 rounded-lg p-2 border border-gray-300 cursor-not-allowed col-span-2">
+
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                    <label class="text-gray-600 font-medium">Email liên hệ</label>
+                    <input type="email" th:field="*{email}" readonly
+                           class="editable-field bg-gray-100 text-black-400 rounded-lg p-2 border border-gray-300 col-span-2 transition-all">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                    <label class="text-gray-600 font-medium">Mật khẩu mới</label>
+                    <input type="password" th:field="*{password}" placeholder="Để trống nếu không đổi" readonly
+                           class="editable-field bg-gray-100 text-black-400 rounded-lg p-2 border border-gray-300 col-span-2 transition-all">
+
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+                    <label class="text-gray-600 font-medium pt-2">Ghi chú</label>
+                    <textarea th:field="*{notes}" rows="3" readonly maxlength="128"
+                              class="editable-field bg-gray-100 text-black-400 rounded-lg p-2 border border-gray-300 col-span-2 resize-none transition-all"></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-gray-50 px-6 py-4 flex flex-wrap sm:flex-nowrap justify-between gap-2 border-t border-gray-200">
+                <div class="flex gap-2 order-2 sm:order-1">
+                    <button type="button" id="btn-edit"
+                            class="inline-flex justify-center rounded-md bg-cyan-600 px-4 py-2 text-white font-semibold shadow hover:bg-cyan-500"
+                            onclick="enableEditMode()">
+                        Chỉnh sửa
+                    </button>
+
+                    <div id="btn-actions" class="hidden flex gap-2">
+                        <button type="submit"
+                                class="inline-flex justify-center rounded-md bg-cyan-600 px-4 py-2 text-white font-semibold shadow hover:bg-cyan-500">
+                            Lưu thay đổi
+                        </button>
+                        <button type="button" onclick="cancelEditMode()"
+                                class="inline-flex justify-center rounded-md bg-white px-4 py-2 text-gray-900 font-semibold shadow border border-gray-300 hover:bg-gray-50">
+                            Hủy
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+    <script th:inline="javascript">
+        /* Chờ DOM nạp xong để đảm bảo an toàn */
+        function enableEditMode() {
+            console.log("Đã bấm nút chỉnh sửa"); // Dòng này để kiểm tra trong Console (F12)
+
+            const btnEdit = document.getElementById('btn-edit');
+            const btnActions = document.getElementById('btn-actions');
+
+            if (btnEdit && btnActions) {
+                btnEdit.classList.add('hidden');
+                btnActions.classList.remove('hidden');
+                btnActions.classList.add('flex');
+            }
+
+            // Tìm các ô Email, Password, Notes
+            const inputs = document.querySelectorAll('.editable-field');
+            inputs.forEach(input => {
+                input.removeAttribute('disabled'); // Nếu bạn dùng disabled
+                input.removeAttribute('readonly'); // Nếu bạn dùng readonly
+
+                // Cập nhật giao diện
+                input.classList.remove('bg-gray-50', 'cursor-not-allowed');
+                input.classList.add('bg-white', 'ring-2', 'ring-blue-100', 'border-blue-400');
+            });
+
+            if (inputs.length > 0) inputs[0].focus();
+        }
+
+        function cancelEditMode() {
+            window.location.reload();
+        }
+    </script>
+</div>
+
+</body>
+</html>

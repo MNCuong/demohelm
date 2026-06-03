@@ -1,0 +1,166 @@
+<div th:fragment="editUserForm" class="flex flex-col h-full">
+
+    <form th:action="@{/users/edit}" method="post" id="modalForm" class="flex flex-col h-full">
+
+        <!-- Nội dung chính – đã rút gọn chiều cao -->
+        <div class="flex-1 overflow-y-auto ">
+
+            <!-- GRID 1 CỘT – rộng tối đa -->
+            <div class="grid grid-cols-1 gap-7 max-w-3xl mx-auto">
+
+                <!-- CỘT DUY NHẤT -->
+                <div class="space-y-5">
+
+                    <!-- Username -->
+                    <div>
+                        <label th:text="#{page.users.form.label.username}"
+                               class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="username" required
+                               class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-300 text-gray-700 placeholder-gray-400
+                              focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-gray-300 shadow-sm transition-all duration-200 text-sm font-medium
+                              cursor-not-allowed"
+                               th:value="${user.username}" readonly>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label th:text="#{page.users.form.label.password}"
+                               class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            Mật khẩu mới(Không bắt buộc)
+                        </label>
+                        <input type="password" name="password" id="password"
+                               class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                              focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium"
+                               placeholder="••••••••">
+                        <span class="text-xs text-red-500 mt-1 hidden" id="password-error"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            Email<span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" name="email" id="email" readonly
+                               class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-300 text-gray-700 placeholder-gray-400
+                              focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-gray-300 shadow-sm transition-all duration-200 text-sm font-medium
+                              cursor-not-allowed"
+                               th:value="${user.email}" placeholder="user@example.com" required>
+                        <span class="text-xs text-red-500 mt-1 hidden" id="email-error"></span>
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label th:text="#{page.users.form.label.role}"
+                               class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            Vai trò
+                        </label>
+                        <select name="role"
+                                class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900
+                               focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium cursor-pointer">
+                            <option value="MONITOR" th:selected="${user.role == 'MONITOR'}">Giám sát</option>
+                            <option value="OPERATOR" th:selected="${user.role == 'OPERATOR'}">Vận hành</option>
+                            <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Quản trị viên</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label th:text="#{page.users.form.label.notes}"
+                               class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            Ghi chú
+                        </label>
+                        <textarea name="notes" rows="4" maxlength="128"
+                                  class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/90 text-gray-900 placeholder-gray-400
+                                 focus:ring-3 focus:ring-cyan-500/30 focus:border-cyan-500 focus:bg-white shadow-sm transition-all duration-200 text-sm font-medium resize-none"
+                                  placeholder="Ghi chú thêm (không bắt buộc)..."
+                                  th:text="${user.notes}"></textarea>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Footer – gọn hơn, đẹp hơn -->
+        <div class="border-t border-gray-200/70 bg-white/90 backdrop-blur-xl px-6 py-5">
+            <div class="flex justify-end gap-3">
+                <!-- Nút Hủy -->
+                <button type="button"
+                        class="modal-cancel-btn px-7 py-3 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md border border-gray-300
+                       hover:bg-gray-300 active:bg-gray-400 transition-all duration-150 shadow-md flex items-center gap-2">
+                    <!-- SVG icon Hủy -->
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span th:text="#{global.button.cancel}"></span>
+                </button>
+
+                <!-- Nút Cập nhật -->
+                <button type="submit"
+                        class="px-9 py-3 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-teal-500
+                       hover:from-cyan-600 hover:to-teal-600 active:from-cyan-700 active:to-teal-700
+                       rounded-md shadow-lg hover:shadow-xl active:shadow-2xl
+                       transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2.5"
+                        style="background-color: rgb(8 145 178 / var(--tw-bg-opacity, 1))">
+                    <!-- SVG icon Cập nhật -->
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                              d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span th:text="#{global.button.edit}"></span>
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('modalForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.querySelector('input[name="password"]');
+        const emailError = document.getElementById('email-error');
+
+        form.addEventListener('submit', function (event) {
+            // Mặc định chặn submit để kiểm tra thủ công
+            event.preventDefault();
+
+            let isValid = true;
+
+            // --- 1. Validation Email (luôn bắt buộc) ---
+            const emailValue = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex đơn giản cho email
+
+            if (emailValue === '' || !emailRegex.test(emailValue)) {
+                emailError.textContent = 'Vui lòng nhập một địa chỉ email hợp lệ.';
+                emailError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                emailError.classList.add('hidden');
+                emailError.textContent = '';
+            }
+
+            const passwordValue = passwordInput.value;
+            if (passwordValue !== '') {
+                if (passwordValue.length < 6) {
+                    alert('Nếu bạn nhập mật khẩu mới, nó phải có ít nhất 6 ký tự.');
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                form.submit();
+            }
+        });
+
+        emailInput.addEventListener('input', function () {
+            if (!emailError.classList.contains('hidden')) {
+                emailError.classList.add('hidden');
+                emailError.textContent = '';
+            }
+        });
+    });
+</script>

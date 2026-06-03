@@ -1,0 +1,75 @@
+<!-- Fragment gửi lại có tab Request/Response -->
+<div th:fragment="resendFormWithTabs(title, placeholderText, buttonText, requestContent, responseContent)">
+    <div class="flex items-center justify-center min-h-screen">
+        <!-- Khung nội dung chính -->
+        <div class="bg-white w-full max-w-lg p-6 rounded-2xl border border-gray-200 shadow-lg">
+
+            <!-- Tab Request / Response sang bên phải -->
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-xl font-bold text-gray-800" th:text="${title}">Tiêu đề màn hình</h4>
+                <div class="flex">
+                    <button type="button" id="tab-request"
+                            class="px-2 py-1 font-semibold bg-white text-black border border-gray-300 rounded-md"
+                            onclick="showTab('request')">Request
+                    </button>
+
+                    <button type="button" id="tab-response"
+                            class="px-2 py-1 font-semibold bg-gray-100 text-gray-500 border border-gray-300 border-l-0 rounded-md"
+                            onclick="showTab('response')">Response
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Textarea tự cập nhật theo giá trị truyền vào -->
+            <textarea id="resend-textarea"
+                      class="w-full p-3 rounded-lg bg-gray-100 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                      rows="6"
+                      style="background-color: #ecf3fa; hover: border: 2px solid blue;"
+                      th:placeholder="${placeholderText}"
+                      th:text="${requestContent}">Nội dung mặc định</textarea>
+
+            <!-- Nút gửi lại gọn, nằm giữa -->
+            <div class="flex justify-center mt-4">
+                <button style="background-color: #1b8af8" type="button" class="px-4 py-2 rounded-md text-black font-bold !bg-cyan-400 hover:bg-cyan-500 **hover:cursor-pointer**">
+                    <span th:text="${buttonText}">Gửi lại</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script chuyển tab -->
+    <script>
+        function showTab(tab) {
+            const textarea = document.getElementById('resend-textarea');
+            const requestTab = document.getElementById('tab-request');
+            const responseTab = document.getElementById('tab-response');
+
+            // Lấy nội dung từ Thymeleaf data attributes
+            const requestContent = /*[[${requestContent}]]*/ '';
+            const responseContent = /*[[${responseContent}]]*/ '';
+
+            if (tab === 'request') {
+                textarea.value = requestContent;
+
+                requestTab.classList.add('bg-white', 'text-black');
+                requestTab.classList.remove('bg-gray-100', 'text-gray-500');
+
+                responseTab.classList.add('bg-gray-100', 'text-gray-500');
+                responseTab.classList.remove('bg-white', 'text-black');
+            } else {
+                textarea.value = responseContent;
+
+                responseTab.classList.add('bg-white', 'text-black');
+                responseTab.classList.remove('bg-gray-100', 'text-gray-500');
+
+                requestTab.classList.add('bg-gray-100', 'text-gray-500');
+                requestTab.classList.remove('bg-white', 'text-black');
+            }
+        }
+
+        // Khởi tạo textarea mặc định là request tab
+        document.addEventListener('DOMContentLoaded', () => showTab('request'));
+    </script>
+</div>

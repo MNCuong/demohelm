@@ -1,0 +1,187 @@
+<div th:fragment="addParticipantForm" class="flex flex-col h-full items-center justify-center ">
+    <form th:action="@{/participants/save}" method="post" id="modalForm" class="flex flex-col h-full">
+
+        <div class="flex-1 overflow-y-auto  space-y-6">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+                <div>
+                    <label for="vsdcode-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.vsdcode}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+
+                    <input type="text" name="vsdcode" id="vsdcode-input" required maxlength="3"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                          focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                    <span id="vsdcode-note" class="text-xs text-red-500 mt-1 hidden"></span>
+                </div>
+
+                <div>
+                    <label for="biccode-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.biccode}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+
+                    <input type="text" name="biccode" id="biccode-input" required maxlength="8"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                          focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                    <span id="biccode-note" class="text-xs text-red-500 mt-1 hidden"></span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+                <div>
+                    <label for="usrname-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.usrname}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+
+                    <input type="text" name="usrname" id="usrname-input" required
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                          focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                    <span id="usrname-note" class="text-xs text-red-500 mt-1 hidden"></span>
+                </div>
+
+                <div>
+                    <label for="ipaddr-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.ipaddr}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+
+                    <input type="text" name="ipAddr" id="ipaddr-input" required
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                          focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                    <span id="ipaddr-note" class="text-xs text-red-500 mt-1 hidden"></span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+                <div class="">
+                    <label for="shortname-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.shortname}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+
+                    <input type="text" name="shortname" id="shortname-input" maxlength="4" required
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                          focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                    <span id="shortname-note" class="text-xs text-gray-500 mt-1"></span>
+                </div>
+                <div class="">
+                    <label for="groupid-select" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.group}"><span class="text-red-500 ml-1">*</span>
+
+                    </label>
+                    <div class="relative z-10">
+                        <select name="groupid" id="groupid-select" required
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                   focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-white shadow-sm">
+                            <option value="" disabled selected th:text="#{form.participant.select.group}"></option>
+                            <option th:each="g : ${groupUsers}" th:value="${g.grid}" th:text="${g.grname}"></option>
+                        </select>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <div class="space-y-6 pt-2">
+                <div>
+                    <label for="fullnamevn-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.name.vn}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <input type="text" name="fullnamevn" id="fullnamevn-input" required maxlength="300"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                      focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                </div>
+
+                <div>
+                    <label for="fullnameen-input" class="block text-sm font-medium text-gray-700 mb-1"
+                           th:utext="#{form.participant.name.en}"><span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <input type="text" name="fullnameen" id="fullnameen-input" required maxlength="300"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900
+                                      focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex justify-end gap-3">
+            <button type="button" th:text="#{button.cancel}"
+                    class="modal-cancel-btn px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-400 shadow-sm transition duration-150 ease-in-out">
+
+            </button>
+
+            <button type="submit" th:text="#{global.button.add}"
+                    class="px-4 py-2 text-sm font-medium text-white bg-cyan-600 rounded-md hover:bg-cyan-700 shadow-md transition duration-150 ease-in-out">
+            </button>
+        </div>
+
+    </form>
+</div>
+<script>
+    /*
+        LƯU Ý QUAN TRỌNG:
+        Logic JS của bạn đang mong đợi 2 trường:
+        1. VSDCODE (Select): Cần có giá trị để kiểm tra BICCODE
+        2. VSDCODE (Input): Cần là một input có id là "vsdcode-input"
+
+        Trong code HTML gốc, VSDCODE là một INPUT.
+        Trong code JS gốc, nó lại cố gắng đọc: const vsdSelect = document.getElementById("vsdcode-select");
+
+        Để JS hoạt động: Tôi đã sửa lại JS để lấy giá trị từ "vsdcode-input"
+        *Nếu VSDCODE thực sự là một <select> như tên biến `vsdSelect` gợi ý, bạn phải đổi HTML lại.*
+    */
+
+    /* =============== 1. BICCODE VALIDATION =============== */
+    const vsdInput = document.getElementById("vsdcode-input"); // Đã đổi để phù hợp với HTML
+    const bicInput = document.getElementById("biccode-input");
+    const bicNote = document.getElementById("biccode-note");
+
+    // Thêm event listener cho vsdInput để BICCODE được kiểm tra lại khi VSDCODE thay đổi
+    vsdInput.addEventListener("input", function () {
+        // Kích hoạt event input trên bicInput để chạy logic kiểm tra
+        bicInput.dispatchEvent(new Event('input'));
+    });
+
+    bicInput.addEventListener("input", function () {
+        const val = this.value.toUpperCase().slice(0, 8);
+        this.value = val;
+
+        const vsd = vsdInput.value.toUpperCase(); // Lấy giá trị từ input VSDCODE
+        const prefix = "VSDC";
+
+        bicNote.classList.add("hidden");
+
+        if (val.length !== 8) {
+            bicNote.textContent = "BICCODE phải có đúng 8 ký tự.";
+            bicNote.classList.remove("hidden");
+            return;
+        }
+
+        // VSDCODE cần có 4 ký tự
+        if (vsd.length !== 3) { // Giả định VSDCODE có 4 ký tự, nếu khác thì chỉnh lại
+            bicNote.textContent = "VSDCODE phải có đúng 3 ký tự.";
+            bicNote.classList.remove("hidden");
+            return;
+        }
+
+        // Kiểm tra định dạng: Bốn ký tự đầu (VSDC) + Bốn ký tự tiếp theo (VSD)
+        if (val.substring(0, 4) !== prefix || val.substring(4, 8) !== vsd) { // Đã sửa chỉ mục (4, 8)
+            bicNote.textContent = `Sai định dạng. BICCODE đúng: ${prefix}${vsd}`; // Đã sửa gợi ý
+            bicNote.classList.remove("hidden");
+        }
+    });
+
+    /* =============== 2. SHORTNAME =============== */
+    const shortInput = document.getElementById("shortname-input");
+    const shortNote = document.getElementById("shortname-note");
+
+    // Khởi tạo ghi chú ngay lần đầu tải form nếu có giá trị
+    if (shortInput.value) {
+        shortNote.textContent = `${shortInput.value.length}/5 ký tự`;
+    } else {
+        shortNote.textContent = `0/5 ký tự`;
+    }
+
+    shortInput.addEventListener("input", function () {
+        this.value = this.value.toUpperCase().slice(0, 5);
+        shortNote.textContent = `${this.value.length}/5 ký tự`;
+    });
+</script>
